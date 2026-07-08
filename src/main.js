@@ -1,1 +1,3 @@
-// Punto de entrada — Fase 0: andamiaje únicamente, sin lógica todavía.
+import { mountDashboard } from './presentation/dashboard.js'
+
+mountDashboard(document.querySelector('#app'))

@@ -1,0 +1,112 @@
+/* Fase 2 — solo estructura/medidas de layout.md. Sin colores ni
+   tipografía del sistema de diseño (eso llega en Fase 4). */
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* --- Barra de Estado Global (layout.md §2: 48px, 3 secciones) --- */
+.dashboard-status-bar {
+  height: 48px;
+  flex: 0 0 auto;
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  gap: 16px;
+  padding: 0 24px;
+}
+
+.status-section {
+  display: flex;
+  align-items: center;
+}
+
+.status-section[data-section='session'] {
+  margin-right: auto;
+}
+
+.status-section[data-section='offline'] {
+  margin-left: auto;
+}
+
+.status-label-abbr {
+  display: none;
+}
+
+/* --- Barra de Pestañas (layout.md §3: 56px, 5 columnas iguales) --- */
+.dashboard-tab-bar {
+  height: 56px;
+  flex: 0 0 auto;
+}
+
+.tab-bar {
+  display: flex;
+  height: 100%;
+}
+
+.tab-button {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: none;
+  cursor: pointer;
+}
+
+.tab-button[aria-selected='true'] {
+  border-bottom-color: #666;
+}
+
+/* --- Zona de Contenido (layout.md §4: max 1280px, margen 24px, min 500px) --- */
+.dashboard-content-area {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.content-area {
+  max-width: 1280px;
+  min-height: 500px;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* --- Responsive (layout.md §5) --- */
+
+/* Tablet: 768px–1023px — misma estructura, menos padding en pestañas */
+@media (max-width: 1023px) {
+  .tab-button {
+    padding: 0 8px;
+  }
+}
+
+/* Móvil: <768px — pestañas en fila con scroll horizontal; barra de
+   estado abrevia su texto en vez de apilar secciones */
+@media (max-width: 767px) {
+  .tab-bar {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .tab-button {
+    flex: 0 0 auto;
+    min-width: 33%;
+    padding: 0 12px;
+  }
+
+  .status-label-full {
+    display: none;
+  }
+
+  .status-label-abbr {
+    display: inline;
+  }
+}

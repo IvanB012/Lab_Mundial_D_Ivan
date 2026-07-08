@@ -46,6 +46,14 @@ Responsable de guardar en `localStorage` la última respuesta exitosa de cada en
 
 Mecanismo interno de publicación/suscripción usado por el Gestor de Estado Global para notificar a los módulos suscritos. No contiene lógica de negocio; solo transporta la notificación de cambio.
 
+**Vocabulario de topics para estado transversal (sesión, countdown, offline):** además de los cuatro dominios de datos (`games`, `teams`, `stadiums`, `groups`), el Sistema de Eventos usa tres topics fijos para que la Barra de Estado Global (`dashboard_design.md`) refleje el estado de resiliencia definido en `03_business_rules.md`:
+
+- `'session'` — payload: `{ active: boolean }`. Se publica cuando cambia el estado de sesión (por ejemplo, tras un 401).
+- `'countdown'` — payload: `{ secondsRemaining: number }`. Se publica en cada segundo de espera durante un backoff por 429, según `03_business_rules.md` §4.
+- `'offline'` — payload: `{ stale: boolean }`. Se publica cuando un módulo muestra datos cacheados en vez de datos frescos.
+
+Cualquier módulo que dispare uno de estos tres estados (Fase 3) debe publicar usando exactamente estos nombres de topic y esta forma de payload — no se introducen nombres alternativos. Este vocabulario es propiedad de este documento; ningún módulo puede redefinirlo.
+
 ## 5. Autenticación (Componente)
 
 Pieza responsable de obtener y almacenar el token JWT, y de exponerlo al Cliente HTTP para construir el encabezado `Authorization`. El comportamiento normativo (qué hacer ante un 401) es propiedad de `03_business_rules.md`; este componente solo lo ejecuta.
