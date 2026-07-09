@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s https://worldcup26.ir/get/games)",
+      "Bash(node -e ' *)",
+      "Bash(mkdir -p C:/Users/ivanv/AppData/Local/Temp/claude/c--Users-ivanv-Downloads-Lab-Mundial-D-Ivan/a64f907b-d736-4622-9447-c76ff556dc30/scratchpad/node_modules)",
+      "Bash(cp -r /c/Users/ivanv/AppData/Local/npm-cache/_npx/705bc6b22212b352/node_modules/playwright C:/Users/ivanv/AppData/Local/Temp/claude/c--Users-ivanv-Downloads-Lab-Mundial-D-Ivan/a64f907b-d736-4622-9447-c76ff556dc30/scratchpad/node_modules/playwright)",
+      "Bash(cp -r /c/Users/ivanv/AppData/Local/npm-cache/_npx/705bc6b22212b352/node_modules/playwright-core C:/Users/ivanv/AppData/Local/Temp/claude/c--Users-ivanv-Downloads-Lab-Mundial-D-Ivan/a64f907b-d736-4622-9447-c76ff556dc30/scratchpad/node_modules/playwright-core)",
+      "Bash(WC_TEST_EMAIL='ivan.isw521.test@example.com' WC_TEST_PASSWORD='TestPass2026!' node live-ticker-check.mjs)",
+      "Bash(curl -s -i -X OPTIONS https://worldcup26.ir/auth/authenticate -H 'Origin: http://localhost:5173' -H 'Access-Control-Request-Method: POST' -H 'Access-Control-Request-Headers: content-type')",
+      "Bash(curl -s -i -X POST https://worldcup26.ir/auth/authenticate -H 'Origin: http://localhost:5173' -H 'Content-Type: application/json' -d '{\"email\":\"ivan.isw521.test@example.com\",\"password\":\"TestPass2026!\"}')",
+      "Bash(curl -s -i https://worldcup26.ir/get/games -H \"Origin: http://localhost:5173\")",
+      "Bash(node live-ticker-check.mjs)",
+      "Bash(netstat -ano)",
+      "Bash(timeout 10 npm run dev)",
+      "Bash(curl -s https://worldcup26.ir/get/stadiums)",
+      "Bash(curl -s https://worldcup26.ir/get/teams)",
+      "Bash(node report-exporter-check.mjs)"
+    ]
+  }
+}

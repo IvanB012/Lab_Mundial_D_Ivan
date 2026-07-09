@@ -1,0 +1,44 @@
+/* @media print (07_report_exporter.md §3): blanco y negro, sin depender
+   de color; solo el reporte es visible al imprimir. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .report-exporter-printable,
+  .report-exporter-printable * {
+    visibility: visible;
+  }
+
+  .report-exporter-printable {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  .report-export-button {
+    display: none;
+  }
+
+  * {
+    color: #000 !important;
+    background: #fff !important;
+  }
+}
+
+.report-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.report-table th,
+.report-table td {
+  border: 1px solid #999;
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.report-missing-notice {
+  font-weight: bold;
+}

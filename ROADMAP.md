@@ -109,6 +109,27 @@
 - El módulo no introduce una segunda barra de estado ni un estilo de toast propio, conforme a `dashboard_design.md`.
 - Ninguna prohibición absoluta aparece en el código del módulo.
 
+---
+
+### Ítem adicional de Fase 3 — Login e Inicio de Sesión
+
+**Objetivo:** cerrar el vacío estructural detectado durante la implementación de Live Ticker: ningún documento del sistema asignaba la responsabilidad de iniciar sesión al arrancar la app.
+
+**Cuándo se implementa:** después de que los cinco módulos (Live Ticker → Exportador de Reportes → Monitor de Integridad → Buscador Bilingüe → Árbol de Eliminatorias) cumplieron su propia Validación y Cierre individual, y antes de dar la Fase 3 completa por cerrada.
+
+**Alcance:**
+- Una pieza de login independiente, ubicada en `src/presentation/` (nunca dentro de un módulo de dominio), que pide credenciales y llama a `auth.login()` de `05_shared_infrastructure.md`.
+- Se dispara una sola vez al arrancar la app, antes de que el usuario acceda al contenido del Dashboard.
+- Es la única dueña del evento `'session'` del vocabulario de `05_shared_infrastructure.md` sección 4 — ningún módulo de dominio (`06`–`10`) publica este evento.
+- **Prerrequisito de infraestructura:** las rutas `/auth/*` tienen un bug de CORS confirmado en el servidor externo (falta `Access-Control-Allow-Origin`), que bloquea el login real desde cualquier navegador. Antes de implementar esta pieza, se debe configurar un proxy en `vite.config.js` (reenviando `/auth/*` a `https://worldcup26.ir` server-side) y ajustar `src/data/endpoints.js` para usar una base relativa en desarrollo. Ver nota de entorno en `04_api_contract.md` sección 2.
+
+**Validación y Cierre (Definition of Done):**
+- Ningún módulo de dominio publica el evento `'session'` — se verifica por grep que solo la pieza de login lo hace.
+- El login real funciona contra `POST /auth/authenticate` y la Barra de Estado Global refleja `session: active` correctamente sin importar qué pestaña esté activa.
+- Un 401 en cualquier módulo sigue disparando `SessionExpiredError` (ya construido en Fase 1) y la pieza de login reacciona mostrando la opción de reautenticarse, conforme a `03_business_rules.md` sección 3.
+
+**Estado:** ⏳ Pendiente
+
 **Estado:** ⏳ Pendiente
 
 ---

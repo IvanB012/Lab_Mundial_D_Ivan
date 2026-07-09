@@ -50,16 +50,21 @@ Ambos son las únicas rutas que no requieren el encabezado `Authorization`.
 https://worldcup26.ir
 ```
 
+**Nota de entorno de desarrollo — bug de CORS en rutas de autenticación:** el servidor de producción no incluye el encabezado `Access-Control-Allow-Origin` en las respuestas (ni en el preflight `OPTIONS`) de `/auth/register` ni `/auth/authenticate`, a diferencia de los endpoints `GET /get/*`, que sí lo incluyen (`*`). Esto es un bug de configuración del proveedor externo, confirmado y no atribuible a nuestro código. En desarrollo, el proyecto usa un proxy del servidor de Vite (`vite.config.js`) que reenvía las peticiones de autenticación evitando la restricción de CORS del navegador. La forma de los endpoints documentada abajo no cambia — solo la ruta base usada en desarrollo es relativa (`/api`) en vez de absoluta.
+
 ## 3. Endpoints Disponibles
 
 ### `GET /get/games`
 
 Devuelve la lista de partidos.
 
-Campos relevantes:
+Campos relevantes (verificados contra la respuesta real de la API):
+- `id` — identificador del partido.
 - `home_team_id`, `away_team_id` — referencian a `GET /get/teams`.
+- `home_score`, `away_score` — marcador actual (usado para detectar cambios en Live Ticker).
+- `time_elapsed`, `finished` — estado temporal del partido.
+- `home_team_name_en`, `away_team_name_en` — nombres de equipo ya embebidos en la respuesta (no requieren cruce adicional con `/get/teams` para mostrarse en inglés).
 - `type` — fase del partido. El valor `"group"` corresponde a fase de grupos; cualquier otro valor corresponde a fase eliminatoria.
-- Marcador y estado del partido (usado para detectar cambios en Live Ticker).
 
 ### `GET /get/teams`
 
