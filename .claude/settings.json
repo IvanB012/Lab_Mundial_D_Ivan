@@ -15,7 +15,9 @@
       "Bash(timeout 10 npm run dev)",
       "Bash(curl -s https://worldcup26.ir/get/stadiums)",
       "Bash(curl -s https://worldcup26.ir/get/teams)",
-      "Bash(node report-exporter-check.mjs)"
+      "Bash(node report-exporter-check.mjs)",
+      "Bash(node integrity-monitor-check.mjs)",
+      "Bash(taskkill //F //IM chrome.exe)"
     ]
   }
 }

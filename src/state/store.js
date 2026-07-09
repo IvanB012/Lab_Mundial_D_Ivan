@@ -1,4 +1,7 @@
 import { getGames, getTeams, getStadiums, getGroups } from '../data/httpClient.js'
+import { fetchWithTimeout } from '../data/timeoutFetch.js'
+import { getToken } from '../data/auth.js'
+import { BASE_URL } from '../data/endpoints.js'
 import { publish, subscribe } from './eventBus.js'
 
 // Gestor de Estado Global (05_shared_infrastructure.md §2): mantiene en
@@ -46,4 +49,17 @@ export async function loadGroups(onCountdownTick) {
   const result = await getGroups(onCountdownTick)
   setState('groups', result)
   return result
+}
+
+// Pass-through consciente para el Monitor de Integridad: un ping de
+// diagnóstico no es información "vigente" de ningún dominio (no encaja
+// junto a games/teams/stadiums/groups), así que no se guarda en `state`
+// ni se publica en el Sistema de Eventos. Existe únicamente para que los
+// módulos nunca accedan a src/data/ directamente (02_architecture.md) —
+// delega en fetchWithTimeout/getToken/BASE_URL ya construidos en Fase 1
+// sin duplicar su lógica. No interpreta el resultado (verde/rojo/timeout
+// es decisión del módulo que llama, no de la Capa de Estado).
+export async function checkEndpointHealth(path, timeoutMs) {
+  const token = getToken()
+  return fetchWithTimeout(`${BASE_URL}${path}`, { headers: { Authorization: `Bearer ${token}` } }, timeoutMs)
 }
