@@ -27,28 +27,40 @@ function setState(domain, result) {
   publish(domain, result)
 }
 
+// Wrapper compartido: si cualquier dominio recibe un SessionExpiredError
+// (401, ya construido en Fase 1), se publica 'session':{active:false}
+// UNA SOLA VEZ desde aquí — la Capa de Estado es quien notifica a los
+// módulos suscritos (02_architecture.md), no cada módulo por separado.
+// El error se re-lanza sin modificar para que el módulo siga
+// manejándolo exactamente igual que antes (ej. Live Ticker mostrando
+// su propio toast y deteniendo el polling).
+async function loadDomain(domain, fetcher, onCountdownTick) {
+  try {
+    const result = await fetcher(onCountdownTick)
+    setState(domain, result)
+    return result
+  } catch (error) {
+    if (error.name === 'SessionExpiredError') {
+      publish('session', { active: false })
+    }
+    throw error
+  }
+}
+
 export async function loadGames(onCountdownTick) {
-  const result = await getGames(onCountdownTick)
-  setState('games', result)
-  return result
+  return loadDomain('games', getGames, onCountdownTick)
 }
 
 export async function loadTeams(onCountdownTick) {
-  const result = await getTeams(onCountdownTick)
-  setState('teams', result)
-  return result
+  return loadDomain('teams', getTeams, onCountdownTick)
 }
 
 export async function loadStadiums(onCountdownTick) {
-  const result = await getStadiums(onCountdownTick)
-  setState('stadiums', result)
-  return result
+  return loadDomain('stadiums', getStadiums, onCountdownTick)
 }
 
 export async function loadGroups(onCountdownTick) {
-  const result = await getGroups(onCountdownTick)
-  setState('groups', result)
-  return result
+  return loadDomain('groups', getGroups, onCountdownTick)
 }
 
 // Pass-through consciente para el Monitor de Integridad: un ping de

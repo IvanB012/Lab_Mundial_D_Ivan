@@ -1,13 +1,19 @@
 import { loadGames } from '../../state/store.js'
-import { publish } from '../../state/eventBus.js'
+import { publish, subscribe } from '../../state/eventBus.js'
 import { showToast } from '../../presentation/toast.js'
 import { renderGames } from './liveTickerView.js'
 
 // Live Ticker (06_live_ticker.md): polling con backoff exponencial sobre
 // GET /get/games, comparación de marcadores y notificaciones no bloqueantes.
 // Solo publica 'countdown' y 'offline' — 'session' es una responsabilidad
-// transversal fuera del dominio de este módulo (pendiente a nivel de sistema).
+// transversal fuera del dominio de este módulo, pero sí la escucha para
+// saber cuándo reanudar el polling tras una detención por sesión expirada.
 const POLL_INTERVAL_MS = 15000
+
+// Mismo texto y enriquecimiento que 10_knockout_tree.md §5 (Ganador/Perdedor
+// de Partido, Ganador/Segundo de Grupo), para que los módulos que muestran
+// equipos de fase eliminatoria aún no determinados sean consistentes entre sí.
+const PENDING_LABEL = 'Por definir'
 
 let panelElement = null
 let previousGamesById = null
@@ -20,6 +26,24 @@ function indexById(games) {
   return map
 }
 
+function translateSlotLabel(label) {
+  if (!label) return null
+  return label
+    .replace(/^Winner Group (\w+)$/, 'Ganador del Grupo $1')
+    .replace(/^Runner-up Group (\w+)$/, 'Segundo del Grupo $1')
+    .replace(/^Winner Match (\d+)$/, 'Ganador del Partido $1')
+    .replace(/^Loser Match (\d+)$/, 'Perdedor del Partido $1')
+}
+
+function resolveTeamLabel(game, side) {
+  const teamId = game[`${side}_team_id`]
+  if (teamId === '0') {
+    const translated = translateSlotLabel(game[`${side}_team_label`])
+    return translated ? `${PENDING_LABEL} (${translated})` : PENDING_LABEL
+  }
+  return game[`${side}_team_name_en`]
+}
+
 function notifyScoreChanges(previousMap, games) {
   if (!previousMap) return
   for (const game of games) {
@@ -29,7 +53,7 @@ function notifyScoreChanges(previousMap, games) {
       previous.home_score !== game.home_score || previous.away_score !== game.away_score
     if (scoreChanged) {
       showToast(
-        `${game.home_team_name_en} ${game.home_score} - ${game.away_score} ${game.away_team_name_en}`,
+        `${resolveTeamLabel(game, 'home')} ${game.home_score} - ${game.away_score} ${resolveTeamLabel(game, 'away')}`,
         { type: 'info' },
       )
     }
@@ -55,7 +79,14 @@ async function pollOnce() {
     // El estado anterior se actualiza solo después de comparar, para no
     // perder la referencia del siguiente ciclo (06_live_ticker.md §6).
     notifyScoreChanges(previousGamesById, games)
-    renderGames(panelElement, games)
+    renderGames(
+      panelElement,
+      games.map((game) => ({
+        ...game,
+        homeLabel: resolveTeamLabel(game, 'home'),
+        awayLabel: resolveTeamLabel(game, 'away'),
+      })),
+    )
     previousGamesById = indexById(games)
   } catch (error) {
     publish('countdown', { secondsRemaining: 0 })
@@ -83,5 +114,18 @@ async function pollOnce() {
 
 export function startLiveTicker() {
   panelElement = document.querySelector('section[data-module-id="live-ticker"]')
+
+  // Reanuda el polling tras una reautenticación exitosa, pero solo si
+  // este módulo llegó a detenerse antes (stopped === true). El primer
+  // publish('session', {active:true}) del login inicial ocurre antes de
+  // que esta suscripción exista (login.js llama a onFirstSuccess después
+  // de publicar), así que no hay riesgo de arrancar el polling dos veces.
+  subscribe('session', ({ active }) => {
+    if (active && stopped) {
+      stopped = false
+      pollOnce()
+    }
+  })
+
   pollOnce()
 }

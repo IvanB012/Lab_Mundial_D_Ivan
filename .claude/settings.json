@@ -18,7 +18,18 @@
       "Bash(node report-exporter-check.mjs)",
       "Bash(node integrity-monitor-check.mjs)",
       "Bash(taskkill //F //IM chrome.exe)",
-      "Bash(node bilingual-search-check.mjs)"
+      "Bash(node bilingual-search-check.mjs)",
+      "Bash(node knockout-tree-check.mjs)",
+      "Bash(curl -s -i -X POST https://worldcup26.ir/auth/authenticate -H \"Content-Type: application/json\" -d '{\"email\":\"no-existe@example.com\",\"password\":\"incorrecta\"}')",
+      "Bash(node partA-check.mjs)",
+      "Bash(node login-check.mjs)",
+      "Bash(node integration-check.mjs)",
+      "Bash(node diag-liveticker.mjs)",
+      "Bash(node diag-liveticker-full.mjs)",
+      "Bash(node verify-fixes.mjs)",
+      "Bash(node verify-single-start.mjs)",
+      "Bash(node verify-point4-6.mjs)",
+      "Bash(tasklist //FI \"IMAGENAME eq chrome.exe\")"
     ]
   }
 }

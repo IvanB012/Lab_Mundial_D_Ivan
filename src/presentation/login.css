@@ -1,0 +1,26 @@
+/* Overlay de login — solo estructura mínima para bloquear visualmente
+   el Dashboard hasta iniciar sesión (Fase 4 aplicará colores/tipografía). */
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* El selector [hidden] tiene mayor especificidad que .login-overlay, así
+   que gana sobre el display:flex de arriba cuando se oculta el overlay
+   (el atributo hidden por sí solo no basta: display:flex ya lo pisaba). */
+.login-overlay[hidden] {
+  display: none;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 280px;
+  padding: 24px;
+  border: 1px solid #999;
+}

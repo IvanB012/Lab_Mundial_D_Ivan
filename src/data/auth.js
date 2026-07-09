@@ -1,4 +1,4 @@
-import { ENDPOINTS } from './endpoints.js'
+import { ENDPOINTS, AUTH_BASE_URL } from './endpoints.js'
 import { coreRequest } from './requestCore.js'
 
 const TOKEN_STORAGE_KEY = 'wc26_auth_token'
@@ -22,6 +22,7 @@ async function authenticate(path, credentials) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: credentials,
+    baseUrl: AUTH_BASE_URL,
   })
   setToken(data.token)
   return data

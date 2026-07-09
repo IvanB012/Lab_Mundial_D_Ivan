@@ -15,10 +15,10 @@ export class HttpError extends Error {
 // ante fallo final, recuperación desde caché (03_business_rules.md §5).
 export async function coreRequest(
   path,
-  { method = 'GET', headers = {}, body, cacheKey, onCountdownTick } = {},
+  { method = 'GET', headers = {}, body, cacheKey, onCountdownTick, baseUrl = BASE_URL } = {},
 ) {
   const executeAttempt = async () =>
-    fetch(`${BASE_URL}${path}`, {
+    fetch(`${baseUrl}${path}`, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,

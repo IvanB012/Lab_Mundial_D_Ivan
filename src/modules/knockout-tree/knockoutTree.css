@@ -1,0 +1,24 @@
+/* Layout jerárquico del bracket (10_knockout_tree.md §1): CSS Flexbox
+   con una columna por ronda. Solo estructura — sin colores ni
+   tipografía del sistema de diseño (eso es Fase 4). */
+.knockout-tree {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+}
+
+.knockout-round {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 200px;
+}
+
+.knockout-match {
+  border: 1px solid #999;
+  padding: 8px;
+}
+
+.knockout-team {
+  padding: 2px 0;
+}
