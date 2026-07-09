@@ -61,25 +61,32 @@ Devuelve la lista de partidos.
 Campos relevantes (verificados contra la respuesta real de la API):
 - `id` — identificador del partido.
 - `home_team_id`, `away_team_id` — referencian a `GET /get/teams`.
+- `stadium_id` — referencia a `GET /get/stadiums` (campo `id`).
 - `home_score`, `away_score` — marcador actual (usado para detectar cambios en Live Ticker).
+- `home_scorers`, `away_scorers` — anotadores, formato de cadena tipo array.
+- `group`, `matchday` — datos de fase de grupos.
+- `local_date`, `persian_date` — fecha del partido en ambos calendarios.
 - `time_elapsed`, `finished` — estado temporal del partido.
-- `home_team_name_en`, `away_team_name_en` — nombres de equipo ya embebidos en la respuesta (no requieren cruce adicional con `/get/teams` para mostrarse en inglés).
+- `home_team_name_en`, `away_team_name_en`, `home_team_name_fa`, `away_team_name_fa` — nombres de equipo ya embebidos en la respuesta, en ambos idiomas.
 - `type` — fase del partido. El valor `"group"` corresponde a fase de grupos; cualquier otro valor corresponde a fase eliminatoria.
 
 ### `GET /get/teams`
 
 Devuelve la lista de equipos.
 
-Campos relevantes:
-- `name_en`, `name_fa` — nombre del equipo en inglés y en farsi respectivamente.
+Campos relevantes (verificados contra la respuesta real de la API):
+- `name_en`, `name_fa` — nombre del equipo en inglés y en farsi respectivamente. 48 de 48 registros con ambos campos presentes.
 - Identificador de equipo, referenciado por `home_team_id` / `away_team_id` en `/get/games`.
 
 ### `GET /get/stadiums`
 
 Devuelve la lista de estadios.
 
-Campos relevantes:
-- `name_en`, `name_fa` — nombre del estadio en inglés y en farsi respectivamente.
+Campos relevantes (verificados contra la respuesta real de la API):
+- `id` — identificador del estadio.
+- `name_en`, `name_fa` — nombre del estadio en inglés y en farsi respectivamente. 16 de 16 registros con ambos campos presentes.
+- `city_en`, `country_en` — ubicación (también existen `city_fa`/`country_fa`, fuera del alcance de `09_bilingual_search.md`).
+- `capacity` — aforo.
 
 ### `GET /get/groups`
 

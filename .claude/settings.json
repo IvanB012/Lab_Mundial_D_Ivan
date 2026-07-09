@@ -17,7 +17,8 @@
       "Bash(curl -s https://worldcup26.ir/get/teams)",
       "Bash(node report-exporter-check.mjs)",
       "Bash(node integrity-monitor-check.mjs)",
-      "Bash(taskkill //F //IM chrome.exe)"
+      "Bash(taskkill //F //IM chrome.exe)",
+      "Bash(node bilingual-search-check.mjs)"
     ]
   }
 }
