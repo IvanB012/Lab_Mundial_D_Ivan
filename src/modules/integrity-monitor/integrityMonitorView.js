@@ -1,9 +1,13 @@
-// Renderizado del panel de Monitor de Integridad — solo texto plano,
-// sin color todavía (el semáforo visual a color llega en Fase 4).
-function renderStatusText(status) {
-  if (status.state === 'checking') return 'En verificación…'
-  if (status.state === 'green') return 'Verde'
-  return `Rojo — ${status.reason}`
+// Renderizado del panel de Monitor de Integridad. El semáforo (Fase 4,
+// design_system.md §3) y el badge de la razón de error usan directamente
+// status.state/status.reason, ya calculados por integrityMonitor.js —
+// esta vista solo decide cómo se pintan, nunca cuál es el estado.
+function renderStatusMarkup(status) {
+  const semaphore = `<span class="ds-semaphore ds-semaphore--${status.state === 'green' ? 'green' : status.state === 'red' ? 'red' : 'checking'}"></span>`
+
+  if (status.state === 'checking') return `${semaphore}En verificación…`
+  if (status.state === 'green') return `${semaphore}Verde`
+  return `${semaphore}Rojo — <span class="ds-badge ds-badge--error">${status.reason}</span>`
 }
 
 export function renderShell(container, endpoints) {
@@ -17,13 +21,13 @@ export function renderShell(container, endpoints) {
             (endpoint) => `
           <li data-endpoint-key="${endpoint.key}">
             <span class="integrity-monitor-label">${endpoint.label}</span>
-            <span class="integrity-monitor-status">En verificación…</span>
+            <span class="integrity-monitor-status"><span class="ds-semaphore ds-semaphore--checking"></span>En verificación…</span>
           </li>
         `,
           )
           .join('')}
       </ul>
-      <button type="button" class="integrity-monitor-retry">Reintentar</button>
+      <button type="button" class="integrity-monitor-retry ds-button ds-button--primary">Reintentar</button>
     </div>
   `
 }
@@ -36,5 +40,5 @@ export function updateEndpointStatus(container, key, status) {
     `[data-endpoint-key="${key}"] .integrity-monitor-status`,
   )
   if (!statusEl) return
-  statusEl.textContent = renderStatusText(status)
+  statusEl.innerHTML = renderStatusMarkup(status)
 }

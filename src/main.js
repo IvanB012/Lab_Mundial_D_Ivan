@@ -1,3 +1,4 @@
+import './presentation/designSystem.css'
 import { mountDashboard } from './presentation/dashboard.js'
 import { mountLogin } from './presentation/login.js'
 import { startLiveTicker } from './modules/live-ticker/liveTicker.js'

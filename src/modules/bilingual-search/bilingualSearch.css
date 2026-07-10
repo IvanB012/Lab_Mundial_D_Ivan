@@ -1,0 +1,26 @@
+/* Fase 4 — solo apariencia. */
+.bilingual-search-toggle {
+  margin-bottom: 16px;
+}
+
+.bilingual-search-lists {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.bilingual-search-teams,
+.bilingual-search-stadiums {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bilingual-search-teams li,
+.bilingual-search-stadiums li {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--ds-color-neutral-bg);
+}

@@ -28,6 +28,8 @@ Necesario para conocer:
 
 Toda petición a los endpoints de datos requiere el encabezado `Authorization: Bearer <token>`. El comportamiento completo de autenticación, incluyendo el manejo de expiración (401), es propiedad de `03_business_rules.md` — este documento no lo redefine.
 
+**Nota de comportamiento real verificado:** las rutas `GET /get/*` no validan el contenido del token — aceptan cualquier valor no vacío en el encabezado `Authorization` (confirmado con un token corrupto/inválido, respuesta 200 igual). Esto significa que un escenario de "token corrupto → 401" no es reproducible contra estas rutas en la API real; solo se puede forzar un 401 real de forma simulada (interceptando la respuesta) o esperando una expiración real del lado del servidor.
+
 El token se obtiene mediante uno de estos dos endpoints:
 
 ### `POST /auth/register`
@@ -68,7 +70,8 @@ Campos relevantes (verificados contra la respuesta real de la API):
 - `local_date`, `persian_date` — fecha del partido en ambos calendarios.
 - `time_elapsed`, `finished` — estado temporal del partido.
 - `home_team_name_en`, `away_team_name_en`, `home_team_name_fa`, `away_team_name_fa` — nombres de equipo ya embebidos en la respuesta, en ambos idiomas.
-- `type` — fase del partido. El valor `"group"` corresponde a fase de grupos; cualquier otro valor corresponde a fase eliminatoria.
+- `type` — fase del partido (verificado contra la API real). El valor `"group"` corresponde a fase de grupos. En fase eliminatoria, los valores confirmados son: `r32`, `r16`, `qf`, `sf`, `third`, `final`. El campo `matchday` confirma el mismo orden de ronda (no requiere un mapeo inventado).
+- `home_team_label`, `away_team_label` — presentes en todos los partidos de fase eliminatoria (determinados o no). Describen el origen del cruce en texto (ej. `"Winner Match 97"`, `"Winner Group J"`, `"Runner-up Group H"`). Cuando `home_team_id`/`away_team_id` es `"0"`, el partido aún no está determinado y estos campos son la única fuente disponible para indicar de dónde vendrá el equipo.
 
 ### `GET /get/teams`
 

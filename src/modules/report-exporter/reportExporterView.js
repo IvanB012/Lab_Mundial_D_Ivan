@@ -1,6 +1,21 @@
 // Renderizado del panel de Exportador de Reportes. La estructura marca
 // explícitamente qué sección faltó (07_report_exporter.md §5) en vez de
 // omitirla silenciosamente.
+
+// Acoplamiento consciente (Fase 4): reportExporter.js no expone un flag
+// de "pendiente", solo entrega el string ya formado. Esta vista compara
+// contra el mismo texto literal que ese módulo usa como PENDING_LABEL
+// para poder mostrarlo como badge — si ese texto cambiara ahí sin
+// actualizar esta constante, el badge simplemente dejaría de pintarse
+// (no rompe nada funcional), pero quedaría desincronizado visualmente.
+const PENDING_LABEL_TEXT = 'Por definir'
+
+function renderCell(value) {
+  return value === PENDING_LABEL_TEXT
+    ? `<span class="ds-badge ds-badge--neutral">${value}</span>`
+    : value
+}
+
 export function renderReport(container, { rows, missingResources }) {
   if (!container) return
 
@@ -27,8 +42,8 @@ export function renderReport(container, { rows, missingResources }) {
             .map(
               (row) => `
             <tr data-game-id="${row.id}">
-              <td>${row.matchup}</td>
-              <td>${row.score}</td>
+              <td>${renderCell(row.matchup)}</td>
+              <td>${renderCell(row.score)}</td>
               <td>${row.stadiumText}</td>
               <td>${row.teamCodesText}</td>
               <td>${row.date}</td>
@@ -44,7 +59,7 @@ export function renderReport(container, { rows, missingResources }) {
   // El botón está disponible en cuanto al menos un recurso cargó (07 §6).
   const atLeastOneResourceLoaded = hasGames || missingResources.length < 3
   const exportButton = atLeastOneResourceLoaded
-    ? `<button type="button" class="report-export-button">Exportar</button>`
+    ? `<button type="button" class="report-export-button ds-button ds-button--primary">Exportar</button>`
     : ''
 
   container.innerHTML = `

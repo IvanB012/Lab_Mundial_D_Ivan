@@ -1,5 +1,8 @@
-// Renderizado del panel de Live Ticker — solo estructura, sin colores
-// ni tipografía todavía (eso llega en Fase 4).
+// Renderizado del panel de Live Ticker. Fase 4: el equipo local/visitante
+// se separa en su propio <span data-team-id> (mismo patrón que el Bracket
+// en knockoutTreeView.js) para que el CSS pueda pintar como badge los
+// equipos aún no determinados (data-team-id="0"), sin decidir aquí cuál
+// texto mostrar — eso ya lo resolvió liveTicker.js.
 export function renderGames(container, games) {
   if (!container) return
 
@@ -9,8 +12,10 @@ export function renderGames(container, games) {
         .map(
           (game) => `
         <li data-game-id="${game.id}">
-          <span>${game.homeLabel} ${game.home_score} - ${game.away_score} ${game.awayLabel}</span>
-          <span>${game.time_elapsed}</span>
+          <span class="live-ticker-team" data-team-id="${game.home_team_id}">${game.homeLabel}</span>
+          <span class="live-ticker-score">${game.home_score} - ${game.away_score}</span>
+          <span class="live-ticker-team" data-team-id="${game.away_team_id}">${game.awayLabel}</span>
+          <span class="live-ticker-time">${game.time_elapsed}</span>
         </li>
       `,
         )

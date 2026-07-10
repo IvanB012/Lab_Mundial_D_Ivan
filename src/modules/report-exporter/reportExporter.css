@@ -30,15 +30,23 @@
 .report-table {
   border-collapse: collapse;
   width: 100%;
+  margin-bottom: 16px;
 }
 
 .report-table th,
 .report-table td {
-  border: 1px solid #999;
-  padding: 4px 8px;
+  border: 1px solid var(--ds-color-neutral-bg);
+  padding: 6px 8px;
   text-align: left;
+}
+
+.report-table th {
+  background: var(--ds-color-neutral-bg);
+  color: var(--ds-color-neutral);
+  font-weight: 600;
 }
 
 .report-missing-notice {
   font-weight: bold;
+  color: var(--ds-color-error);
 }

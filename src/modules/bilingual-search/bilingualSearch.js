@@ -1,3 +1,4 @@
+import './bilingualSearch.css'
 import { loadTeams, loadStadiums } from '../../state/store.js'
 import { publish } from '../../state/eventBus.js'
 import { renderShell, renderData, applyLanguage, updateToggleLabel } from './bilingualSearchView.js'

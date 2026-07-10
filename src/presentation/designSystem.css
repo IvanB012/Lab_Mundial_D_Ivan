@@ -1,0 +1,190 @@
+/* Sistema de Diseño (design_system.md): paleta semántica, tipografía y
+   componentes reutilizables compartidos por los 5 módulos + login.
+   Cargado una sola vez desde main.js — ningún módulo redefine su propio
+   estilo de estos componentes (design_system.md §4). */
+
+:root {
+  /* Paleta semántica (design_system.md §1) — cada color tiene un único
+     significado funcional, nunca decorativo. */
+  --ds-color-info: #1d4ed8;
+  --ds-color-info-bg: #dbeafe;
+  --ds-color-warning: #b45309;
+  --ds-color-warning-bg: #fef3c7;
+  --ds-color-success: #15803d;
+  --ds-color-success-bg: #dcfce7;
+  --ds-color-error: #b91c1c;
+  --ds-color-error-bg: #fee2e2;
+  --ds-color-neutral: #52525b;
+  --ds-color-neutral-bg: #e4e4e7;
+
+  --ds-font-family:
+    'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+}
+
+body {
+  font-family: var(--ds-font-family);
+  color: #18181b;
+}
+
+/* --- Tipografía: jerarquía de 3 niveles (design_system.md §2) ---
+   Título de módulo/sección: los <h3> ya existentes en Buscador Bilingüe
+   y Árbol de Eliminatorias. Texto de contenido: estilo por defecto del
+   body. Texto secundario: clases ya existentes que marcan anotaciones
+   o estados transitorios en cada módulo. */
+h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: #18181b;
+}
+
+.report-missing-notice,
+.bilingual-search-loading,
+.knockout-tree-empty,
+.status-label-abbr,
+.integrity-monitor-label {
+  font-size: 0.85rem;
+  color: var(--ds-color-neutral);
+}
+
+.login-error {
+  font-size: 0.85rem;
+  color: var(--ds-color-error);
+  font-weight: 600;
+}
+
+/* --- Toast (design_system.md §3) ---
+   toast.js ya emite estas clases exactas (wc26-toast, wc26-toast--tipo);
+   aquí solo se define su apariencia, nunca cuándo aparece ni por cuánto. */
+#wc26-toast-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1000;
+}
+
+.wc26-toast {
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: var(--ds-font-family);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* type:'info' (actualizaciones y avisos generales) mapea a Azul —
+   "Operación correcta", fila 1 de la paleta. No existe un type:'success'
+   en el código, así que no se asume verde sin evidencia (asunción
+   confirmada explícitamente antes de implementar). */
+.wc26-toast--info {
+  background: var(--ds-color-info);
+}
+
+.wc26-toast--warning {
+  background: var(--ds-color-warning);
+}
+
+.wc26-toast--error {
+  background: var(--ds-color-error);
+}
+
+/* --- Indicador tipo semáforo (design_system.md §3) ---
+   Verde/ámbar/rojo, tal como lo define el documento — 'checking' usa el
+   tercer color del semáforo (ámbar), no gris, porque el propio semáforo
+   solo tiene 3 estados posibles. */
+.ds-semaphore {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  flex: 0 0 auto;
+}
+
+.ds-semaphore--green {
+  background: var(--ds-color-success);
+}
+
+.ds-semaphore--red {
+  background: var(--ds-color-error);
+}
+
+.ds-semaphore--checking {
+  background: var(--ds-color-warning);
+}
+
+/* --- Badge de estado (design_system.md §3) ---
+   Reutilizado por Monitor de Integridad, Bracket, Live Ticker y
+   Exportador de Reportes para marcar "Por definir", "Tiempo agotado",
+   "Offline", etc. */
+.ds-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ds-badge--neutral {
+  background: var(--ds-color-neutral-bg);
+  color: var(--ds-color-neutral);
+}
+
+.ds-badge--error {
+  background: var(--ds-color-error-bg);
+  color: var(--ds-color-error);
+}
+
+.ds-badge--warning {
+  background: var(--ds-color-warning-bg);
+  color: var(--ds-color-warning);
+}
+
+/* --- Botón primario / secundario (design_system.md §3) --- */
+.ds-button {
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--ds-color-info);
+}
+
+.ds-button--primary {
+  background: var(--ds-color-info);
+  color: #fff;
+}
+
+.ds-button--secondary {
+  background: transparent;
+  color: var(--ds-color-info);
+}
+
+/* --- Countdown (design_system.md §3) ---
+   Usado por la Barra de Estado Global; mismo componente que cualquier
+   módulo usaría para un countdown propio (ninguno lo hace hoy). */
+.ds-countdown {
+  color: var(--ds-color-warning);
+  font-weight: 600;
+}
+
+/* --- Estados de la Barra de Estado Global (dashboard_design.md §2) --- */
+.ds-session-active {
+  color: var(--ds-color-info);
+  font-weight: 600;
+}
+
+.ds-session-inactive {
+  color: var(--ds-color-error);
+  font-weight: 600;
+}
+
+.ds-offline {
+  color: var(--ds-color-warning);
+  font-weight: 600;
+}

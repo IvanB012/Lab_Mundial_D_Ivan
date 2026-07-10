@@ -1,3 +1,4 @@
+import './liveTicker.css'
 import { loadGames } from '../../state/store.js'
 import { publish, subscribe } from '../../state/eventBus.js'
 import { showToast } from '../../presentation/toast.js'

@@ -6,7 +6,7 @@ export function renderShell(container) {
 
   container.innerHTML = `
     <div class="bilingual-search">
-      <button type="button" class="bilingual-search-toggle">Ver en Farsi</button>
+      <button type="button" class="bilingual-search-toggle ds-button ds-button--secondary">Ver en Farsi</button>
       <div class="bilingual-search-lists">
         <p class="bilingual-search-loading">Cargando equipos y estadios…</p>
       </div>

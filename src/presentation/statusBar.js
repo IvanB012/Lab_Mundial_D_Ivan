@@ -18,17 +18,18 @@ function render(root) {
         ? 'Sesión activa'
         : 'Sesión expirada'
 
+  const sessionClass = viewState.sessionActive ? 'ds-session-active' : 'ds-session-inactive'
   root.querySelector('[data-section="session"]').innerHTML = `
-    <span class="status-label-full">${sessionText}</span>
-    <span class="status-label-abbr">${viewState.sessionActive ? 'Activo' : 'Sesión'}</span>
+    <span class="status-label-full ${sessionClass}">${sessionText}</span>
+    <span class="status-label-abbr ${sessionClass}">${viewState.sessionActive ? 'Activo' : 'Sesión'}</span>
   `
 
   const countdownSection = root.querySelector('[data-section="countdown"]')
   if (viewState.secondsRemaining !== null) {
     countdownSection.hidden = false
     countdownSection.innerHTML = `
-      <span class="status-label-full">Reintentando en ${viewState.secondsRemaining}s</span>
-      <span class="status-label-abbr">${viewState.secondsRemaining}s</span>
+      <span class="status-label-full ds-countdown">Reintentando en ${viewState.secondsRemaining}s</span>
+      <span class="status-label-abbr ds-countdown">${viewState.secondsRemaining}s</span>
     `
   } else {
     countdownSection.hidden = true
@@ -39,8 +40,8 @@ function render(root) {
   if (viewState.stale) {
     offlineSection.hidden = false
     offlineSection.innerHTML = `
-      <span class="status-label-full">Datos no actualizados</span>
-      <span class="status-label-abbr">Offline</span>
+      <span class="status-label-full ds-offline">Datos no actualizados</span>
+      <span class="status-label-abbr ds-offline">Offline</span>
     `
   } else {
     offlineSection.hidden = true

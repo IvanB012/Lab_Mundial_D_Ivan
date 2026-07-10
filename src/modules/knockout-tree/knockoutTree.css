@@ -15,10 +15,29 @@
 }
 
 .knockout-match {
-  border: 1px solid #999;
+  border: 1px solid var(--ds-color-neutral-bg);
+  border-radius: 4px;
   padding: 8px;
 }
 
 .knockout-team {
   padding: 2px 0;
+}
+
+.knockout-score {
+  font-weight: 600;
+  padding: 2px 0;
+}
+
+/* Badge "Por definir" (Fase 4, design_system.md §3) — mismo hook
+   data-team-id="0" que ya calcula resolveSlot() en knockoutTree.js,
+   sin cambios de lógica. */
+.knockout-team[data-team-id='0'] {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ds-color-neutral-bg);
+  color: var(--ds-color-neutral);
+  font-size: 0.8rem;
+  font-weight: 600;
 }

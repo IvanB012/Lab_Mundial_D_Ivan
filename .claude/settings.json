@@ -29,7 +29,17 @@
       "Bash(node verify-fixes.mjs)",
       "Bash(node verify-single-start.mjs)",
       "Bash(node verify-point4-6.mjs)",
-      "Bash(tasklist //FI \"IMAGENAME eq chrome.exe\")"
+      "Bash(tasklist //FI \"IMAGENAME eq chrome.exe\")",
+      "Bash(node verify-fase4.mjs)",
+      "Bash(node verify-fase4-responsive.mjs)",
+      "Bash(node verify-refresh-bug.mjs)",
+      "Bash(node verify-session-persist.mjs)",
+      "Bash(node diag-corrupt-token.mjs)",
+      "Bash(node fase5-partA.mjs)",
+      "Bash(node fase5-partBC.mjs)",
+      "Bash(node fase5-partB4-retry.mjs)",
+      "Bash(node fase5-partB4-clean.mjs)",
+      "Bash(node diag-login-fail.mjs)"
     ]
   }
 }

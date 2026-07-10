@@ -1,3 +1,4 @@
+import './integrityMonitor.css'
 import { checkEndpointHealth } from '../../state/store.js'
 import { renderShell, updateEndpointStatus } from './integrityMonitorView.js'
 

@@ -1,5 +1,5 @@
 import './login.css'
-import { login } from '../data/auth.js'
+import { login, getToken } from '../data/auth.js'
 import { publish, subscribe } from '../state/eventBus.js'
 
 // Pieza de Login (ROADMAP.md, ítem adicional de Fase 3): se dispara una
@@ -25,13 +25,27 @@ export function mountLogin(rootElement, onFirstSuccess) {
         <input type="password" name="password" required autocomplete="current-password" />
       </label>
       <p class="login-error" hidden></p>
-      <button type="submit">Entrar</button>
+      <button type="submit" class="ds-button ds-button--primary">Entrar</button>
     </form>
   `
   rootElement.appendChild(overlay)
 
   const form = overlay.querySelector('.login-form')
   const errorEl = overlay.querySelector('.login-error')
+
+  // Si ya hay un token guardado de una sesión previa (auth.js, Fase 1),
+  // se omite el overlay y se arranca directo — sin volver a pedir
+  // credenciales en cada refresh. No se valida el token contra el
+  // servidor aquí: si estuviera vencido, el primer 401 real de
+  // cualquier módulo dispara SessionExpiredError → 'session':{active:false}
+  // → el listener de abajo vuelve a mostrar el overlay (mismo mecanismo
+  // de recuperación ya construido para Bug 2).
+  if (getToken()) {
+    overlay.hidden = true
+    hasStartedOnce = true
+    publish('session', { active: true })
+    onFirstSuccess()
+  }
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault()
