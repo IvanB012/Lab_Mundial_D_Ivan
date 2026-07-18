@@ -13,7 +13,7 @@ export function renderGames(container, games) {
           (game) => `
         <li data-game-id="${game.id}">
           <span class="live-ticker-team" data-team-id="${game.home_team_id}">${game.homeLabel}</span>
-          <span class="live-ticker-score">${game.home_score} - ${game.away_score}</span>
+          <span class="live-ticker-score">${game.scoreText}</span>
           <span class="live-ticker-team" data-team-id="${game.away_team_id}">${game.awayLabel}</span>
           <span class="live-ticker-time">${game.time_elapsed}</span>
         </li>

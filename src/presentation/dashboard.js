@@ -1,5 +1,6 @@
 import './dashboard.css'
 import { mountStatusBar } from './statusBar.js'
+import { mountLogoutButton } from './logoutButton.js'
 import { mountTabBar } from './tabBar.js'
 import { mountContentArea } from './contentArea.js'
 
@@ -15,6 +16,7 @@ export function mountDashboard(root) {
   `
 
   mountStatusBar(root.querySelector('.dashboard-status-bar'))
+  mountLogoutButton(root.querySelector('.dashboard-status-bar'))
   const content = mountContentArea(root.querySelector('.dashboard-content-area'))
   mountTabBar(root.querySelector('.dashboard-tab-bar'), content.showModule)
 }

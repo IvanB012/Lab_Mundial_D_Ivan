@@ -12,6 +12,8 @@
 .dashboard-status-bar {
   height: 48px;
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
   background: #fff;
   border-bottom: 1px solid var(--ds-color-neutral-bg);
 }
@@ -19,9 +21,19 @@
 .status-bar {
   display: flex;
   align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
   height: 100%;
   gap: 16px;
   padding: 0 24px;
+}
+
+/* Botón de logout (Fase 6, Parte B): hermano de .status-bar dentro del
+   mismo header, no un hijo suyo — logoutButton.js no conoce ni toca la
+   estructura interna que statusBar.js renderiza. */
+.logout-button {
+  flex: 0 0 auto;
+  margin-right: 24px;
 }
 
 .status-section {

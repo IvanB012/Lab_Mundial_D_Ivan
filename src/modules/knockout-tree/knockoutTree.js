@@ -25,6 +25,26 @@ function handleCountdownTick(secondsRemaining) {
   publish('countdown', { secondsRemaining })
 }
 
+// games y teams se cargan en paralelo (§6) y cada uno puede resolver
+// primero: applyTeamCrossReference() solo tiene algo que parchear una
+// vez que renderBracket() ya dibujó los slots pendientes. Estas tres
+// variables desacoplan "¿ya tengo el resultado de teams?" de "¿ya
+// puedo aplicarlo?", para no perder el parche cuando teams resuelve
+// antes que el bracket exista.
+let bracketRendered = false
+let teamsOutcome = null
+let crossReferenceApplied = false
+
+// Idempotente y sin importar el orden de llegada: ambos llamadores
+// (runGamesLoad al terminar de dibujar, runTeamsLoad al terminar de
+// cargar) invocan esta misma función; solo la primera llamada que
+// encuentre las dos condiciones cumplidas aplica el parche.
+function tryApplyCrossReference(panelElement) {
+  if (crossReferenceApplied || !bracketRendered || teamsOutcome === null) return
+  crossReferenceApplied = true
+  applyTeamCrossReference(panelElement, teamsOutcome)
+}
+
 function translateSlotLabel(label) {
   if (!label) return null
   return label
@@ -89,16 +109,19 @@ async function runGamesLoad(panelElement, gamesPromise) {
     publish('countdown', { secondsRemaining: 0 })
     renderBracket(panelElement, [])
   }
+  bracketRendered = true
+  tryApplyCrossReference(panelElement)
 }
 
 async function runTeamsLoad(panelElement, teamsPromise) {
   try {
     const result = await teamsPromise
     const teamsById = new Map(result.data.teams.map((team) => [team.id, team]))
-    applyTeamCrossReference(panelElement, { teamsById, failed: false })
+    teamsOutcome = { teamsById, failed: false }
   } catch (error) {
-    applyTeamCrossReference(panelElement, { teamsById: null, failed: true })
+    teamsOutcome = { teamsById: null, failed: true }
   }
+  tryApplyCrossReference(panelElement)
 }
 
 export function startKnockoutTree() {

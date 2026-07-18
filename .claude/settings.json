@@ -39,7 +39,23 @@
       "Bash(node fase5-partBC.mjs)",
       "Bash(node fase5-partB4-retry.mjs)",
       "Bash(node fase5-partB4-clean.mjs)",
-      "Bash(node diag-login-fail.mjs)"
+      "Bash(node diag-login-fail.mjs)",
+      "Bash(curl -s -H \"Authorization: Bearer testtoken\" \"https://worldcup26.ir/get/games\" -m 15 -o /tmp_games.json -w \"HTTP:%{http_code}\\\\n\")",
+      "Bash(wc -c /tmp_games.json)",
+      "Bash(curl -s -H 'Authorization: Bearer testtoken' https://worldcup26.ir/get/games -m 20 -o /c/Users/ivanv/AppData/Local/Temp/claude/c--Users-ivanv-Downloads-Lab-Mundial-D-Ivan/1c5af703-d13e-44f3-9740-7d4221de9820/scratchpad/games.json -w 'HTTP:%{http_code}\\\\n')",
+      "Read(//c/Users/ivanv/AppData/Local/Temp/claude/c--Users-ivanv-Downloads-Lab-Mundial-D-Ivan/1c5af703-d13e-44f3-9740-7d4221de9820/scratchpad/**)",
+      "Bash(node check.js)",
+      "Bash(npm run *)",
+      "Bash(npx playwright *)",
+      "Read(//c/Users/ivanv/AppData/Local/ms-playwright/**)",
+      "Bash(curl -s -X POST \"https://worldcup26.ir/auth/register\" -H \"Content-Type: application/json\" -d '{\"name\":\"Fase6 Verify\",\"email\":\"fase6.verify.20260713@example.com\",\"password\":\"Fase6Verify!23\"}' -m 20 -w \"\\\\nHTTP:%{http_code}\\\\n\")",
+      "Bash(node verify-abc.js)",
+      "Bash(node verify-d-scenario1.js)",
+      "Bash(node verify-d-scenario2.js)",
+      "Bash(sed -i \"s/d2-crossref-failure-full.png/d2-delayed-full.png/; s/d2-crossref-failure-zoom.png/d2-delayed-zoom.png/\" verify-d-scenario2-delayed.js)",
+      "Bash(node verify-d-scenario2-delayed.js)",
+      "Bash(sed -i \"s/d2-crossref-failure-full.png/d2-teamsdelayed-full.png/; s/d2-crossref-failure-zoom.png/d2-teamsdelayed-zoom.png/\" verify-d-scenario2-teamsdelayed.js)",
+      "Bash(node verify-d-scenario2-teamsdelayed.js)"
     ]
   }
 }

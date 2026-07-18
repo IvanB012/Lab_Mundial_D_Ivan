@@ -41,7 +41,7 @@
 - La estructura de carpetas está creada y es coherente con las capas descritas en `02_architecture.md`.
 - No existe todavía lógica de negocio ni llamadas a la API — esta fase es exclusivamente de andamiaje.
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Completada
 
 ---
 
@@ -66,7 +66,7 @@
 - El modo offline recupera correctamente una respuesta cacheada cuando se simula un fallo de red.
 - Ninguna de las prohibiciones absolutas (`alert()`, `.then()`/`.catch()`, `reload()`) aparece en el código de esta capa.
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Completada
 
 ---
 
@@ -86,7 +86,7 @@
 - La Barra de Estado Global refleja cambios reales de sesión y de countdown usando la infraestructura de la Fase 1 (aunque sea con datos de prueba).
 - El layout respeta las medidas y el comportamiento responsive definidos en `layout.md` en al menos los tres rangos de pantalla (escritorio, tablet, móvil).
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Completada
 
 ---
 
@@ -128,9 +128,7 @@
 - El login real funciona contra `POST /auth/authenticate` y la Barra de Estado Global refleja `session: active` correctamente sin importar qué pestaña esté activa.
 - Un 401 en cualquier módulo sigue disparando `SessionExpiredError` (ya construido en Fase 1) y la pieza de login reacciona mostrando la opción de reautenticarse, conforme a `03_business_rules.md` sección 3.
 
-**Estado:** ⏳ Pendiente
-
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Completada
 
 ---
 
@@ -150,7 +148,7 @@
 - El significado semántico del color se respeta en los cinco módulos (por ejemplo, rojo siempre es error, nunca decorativo).
 - La jerarquía tipográfica es visualmente idéntica entre módulos para el mismo nivel de texto.
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Completada
 
 ---
 
@@ -170,6 +168,46 @@
 - Es posible reproducir en vivo, con DevTools abierto, al menos un error 401, un 429 con countdown y un 500 con backoff, sin que la aplicación se rompa visualmente.
 - No queda ninguna prohibición absoluta en ninguna parte del código final.
 - El estudiante puede justificar cada decisión no trivial señalando el documento de `/context` que la origina.
+
+**Estado:** ✅ Completada
+
+---
+
+## Fase 6 — Mejoras Post-Validación e Integridad Verificada
+
+**Objetivo:** implementar las mejoras confirmadas como reales y de bajo riesgo durante la revisión exploratoria documentada en `IDEAS_A_VALIDAR.md` (puntos 1, 2 y 3), y reforzar con evidencia explícita el Reto de Resiliencia del Árbol de Eliminatorias ya cerrado en Fase 3, antes de la defensa oral.
+
+**Origen:** esta fase no proviene del enunciado original ni del diseño inicial del sistema de contexto — nace de una revisión manual de la aplicación ya terminada, documentada en `IDEAS_A_VALIDAR.md` (raíz del proyecto, fuera de `/context`). Los puntos 4, 5, 6 y 7 de ese documento fueron evaluados y descartados o reconfirmados sin cambios; no forman parte de esta fase.
+
+**Documentos relevantes:** `03_business_rules.md`, `05_shared_infrastructure.md` (vocabulario de eventos), `06_live_ticker.md`, `10_knockout_tree.md`
+
+### Alcance — Parte A: Mensaje de sesión expirada en el login
+
+Distinguir, dentro del overlay de login, entre "primera apertura" y "reapertura por sesión expirada" (401 real o logout manual), mostrando un mensaje explícito en el segundo caso. Reutiliza la bandera `hasStartedOnce` ya existente en `login.js` — sin nuevo topic de eventos ni cambios en `eventBus.js`/`store.js`.
+
+### Alcance — Parte B: Botón de "Cerrar sesión"
+
+- Nuevo control de logout manual, ubicado en `src/presentation/` (junto a `statusBar.js`, no dentro de ningún módulo de dominio), que dispara exactamente el mismo mecanismo que el 401 real: `clearToken()` + `publish('session', {active:false})`.
+- Corrección necesaria y asociada en `06_live_ticker.md`: hoy, `liveTicker.js` solo detiene su polling (`stopped = true`) dentro de su propio manejo de `SessionExpiredError` — nunca al recibir `'session': {active:false}` por otra vía (como este nuevo botón). Se agrega la rama simétrica en el `subscribe('session', ...)` ya existente en `liveTicker.js`, para que cualquier cierre de sesión (401 real o logout manual) detenga el polling.
+
+### Alcance — Parte C: Ambigüedad de marcador "0-0" en partidos no iniciados
+
+En Live Ticker, un partido que aún no comenzó (`finished: "FALSE"`) muestra el mismo `0 - 0` que un partido ya finalizado con ese resultado real, generando ambigüedad. Se aplica el mismo patrón ya usado en `knockoutTree.js` (condicionar por `finished`) para mostrar algo como `"vs"` en vez del marcador cuando el partido no ha iniciado.
+
+### Alcance — Parte D: Reverificación dirigida — Reto de Resiliencia del Árbol de Eliminatorias
+
+No es una corrección de bug — es una reverificación explícita, con evidencia nueva, del comportamiento ya definido en `10_knockout_tree.md` sección 5, solicitada por el usuario tras revisión manual:
+
+- Confirmar que, si la fase eliminatoria aún no tiene datos disponibles (torneo en fase de grupos), el bracket se renderiza igual, con casillas "Por definir" — nunca en blanco.
+- Confirmar que, si la petición falla **después** de que el bracket parcial ya se dibujó, las rondas ya resueltas se conservan intactas, y solo las rondas pendientes de cruce se marcan en estado de error — sin afectar el resto.
+
+**Validación y Cierre (Definition of Done):**
+- El overlay de login muestra el mensaje distinto correctamente en una reapertura real por sesión expirada, y el formulario estándar en la primera carga.
+- El botón de "Cerrar sesión" limpia el token, publica `'session': {active:false}`, y Live Ticker detiene su polling en ese mismo instante (verificable por ausencia de nuevas peticiones a `/get/games` tras el logout).
+- Un partido no iniciado muestra `"vs"` (o equivalente) en vez de `"0 - 0"` en Live Ticker; un partido finalizado con marcador 0-0 real sigue mostrando `"0 - 0"` correctamente (no se pierde ese caso).
+- Evidencia explícita y reproducible (capturas o registro de red) de ambos escenarios del Reto de Resiliencia del Árbol de Eliminatorias, generada simulando condiciones reales (interceptando la respuesta de red), no alterando el código de la aplicación.
+- Ninguna prohibición absoluta aparece en el código nuevo o modificado.
+- Los 5 módulos y el login siguen funcionando sin regresión tras estos cambios.
 
 **Estado:** ⏳ Pendiente
 

@@ -70,6 +70,13 @@ function handleCountdownTick(secondsRemaining) {
 }
 
 async function pollOnce() {
+  // Guarda de entrada: un ciclo puede quedar agendado con setTimeout()
+  // antes de que 'session':{active:false} ponga stopped en true (401 real
+  // o logout manual). El chequeo de abajo, antes de agendar el SIGUIENTE
+  // ciclo, no cancela ese timer ya pendiente — sin esta guarda, ese ciclo
+  // ya agendado igual dispararía una petición de red tras el logout.
+  if (stopped) return
+
   try {
     const result = await loadGames(handleCountdownTick)
     publish('countdown', { secondsRemaining: 0 })
@@ -86,6 +93,11 @@ async function pollOnce() {
         ...game,
         homeLabel: resolveTeamLabel(game, 'home'),
         awayLabel: resolveTeamLabel(game, 'away'),
+        // Un partido no iniciado (finished !== 'TRUE') no tiene marcador
+        // real todavía: mostrar "0 - 0" tal cual lo confundiría con un
+        // resultado real. Mismo patrón que buildRounds() en
+        // knockoutTree.js.
+        scoreText: game.finished === 'TRUE' ? `${game.home_score} - ${game.away_score}` : 'vs',
       })),
     )
     previousGamesById = indexById(games)
@@ -121,10 +133,18 @@ export function startLiveTicker() {
   // publish('session', {active:true}) del login inicial ocurre antes de
   // que esta suscripción exista (login.js llama a onFirstSuccess después
   // de publicar), así que no hay riesgo de arrancar el polling dos veces.
+  //
+  // Rama simétrica (ROADMAP.md Fase 6, Parte B): antes, `stopped` solo se
+  // ponía en true dentro del propio catch de pollOnce() al recibir un
+  // SessionExpiredError real. Un cierre de sesión manual (logoutButton.js)
+  // publica el mismo 'session':{active:false} sin pasar por ese catch, así
+  // que sin esta rama el polling seguiría corriendo tras un logout manual.
   subscribe('session', ({ active }) => {
     if (active && stopped) {
       stopped = false
       pollOnce()
+    } else if (!active) {
+      stopped = true
     }
   })
 

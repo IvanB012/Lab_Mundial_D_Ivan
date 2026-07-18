@@ -16,6 +16,7 @@ export function mountLogin(rootElement, onFirstSuccess) {
   overlay.innerHTML = `
     <form class="login-form">
       <h2>Iniciar sesión</h2>
+      <p class="login-session-message login-error" hidden>Tu sesión expiró, inicia sesión de nuevo.</p>
       <label>
         Email
         <input type="email" name="email" required autocomplete="email" />
@@ -32,6 +33,7 @@ export function mountLogin(rootElement, onFirstSuccess) {
 
   const form = overlay.querySelector('.login-form')
   const errorEl = overlay.querySelector('.login-error')
+  const sessionMessageEl = overlay.querySelector('.login-session-message')
 
   // Si ya hay un token guardado de una sesión previa (auth.js, Fase 1),
   // se omite el overlay y se arranca directo — sin volver a pedir
@@ -66,9 +68,15 @@ export function mountLogin(rootElement, onFirstSuccess) {
   })
 
   // Reacciona a un 401 real de cualquier módulo (publicado desde
-  // store.js, no desde aquí) volviendo a pedir credenciales.
+  // store.js) o a un logout manual (logoutButton.js) volviendo a pedir
+  // credenciales. Este evento solo puede llegar después de que el
+  // usuario ya empezó a usar la app (loadDomain/logoutButton solo
+  // operan post-login), así que hasStartedOnce ya es true en este
+  // punto: por eso distingue de forma confiable "reapertura por sesión
+  // expirada" de la primera carga, sin necesitar una bandera nueva.
   subscribe('session', ({ active }) => {
     if (!active) {
+      sessionMessageEl.hidden = !hasStartedOnce
       overlay.hidden = false
     }
   })
