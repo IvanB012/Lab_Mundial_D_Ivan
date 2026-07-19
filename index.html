@@ -3,6 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- frame-ancestors no aplica vía <meta> (solo como header HTTP real,
+         fuera de alcance sin backend propio) — se omite a propósito. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://worldcup26.ir http://localhost:8000; base-uri 'self'; form-action 'self'"
+    />
     <title>Dashboard Mundial 2026</title>
   </head>
   <body>

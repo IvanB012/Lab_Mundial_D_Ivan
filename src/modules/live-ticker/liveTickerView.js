@@ -3,23 +3,41 @@
 // en knockoutTreeView.js) para que el CSS pueda pintar como badge los
 // equipos aún no determinados (data-team-id="0"), sin decidir aquí cuál
 // texto mostrar — eso ya lo resolvió liveTicker.js.
+function buildTeamSpan(teamId, label) {
+  const span = document.createElement('span')
+  span.className = 'live-ticker-team'
+  span.dataset.teamId = teamId
+  span.textContent = label
+  return span
+}
+
 export function renderGames(container, games) {
   if (!container) return
 
-  container.innerHTML = `
-    <ul class="live-ticker-list">
-      ${games
-        .map(
-          (game) => `
-        <li data-game-id="${game.id}">
-          <span class="live-ticker-team" data-team-id="${game.home_team_id}">${game.homeLabel}</span>
-          <span class="live-ticker-score">${game.scoreText}</span>
-          <span class="live-ticker-team" data-team-id="${game.away_team_id}">${game.awayLabel}</span>
-          <span class="live-ticker-time">${game.time_elapsed}</span>
-        </li>
-      `,
-        )
-        .join('')}
-    </ul>
-  `
+  const list = document.createElement('ul')
+  list.className = 'live-ticker-list'
+
+  for (const game of games) {
+    const li = document.createElement('li')
+    li.dataset.gameId = game.id
+
+    const scoreSpan = document.createElement('span')
+    scoreSpan.className = 'live-ticker-score'
+    scoreSpan.textContent = game.scoreText
+
+    const timeSpan = document.createElement('span')
+    timeSpan.className = 'live-ticker-time'
+    timeSpan.textContent = game.time_elapsed
+
+    li.append(
+      buildTeamSpan(game.home_team_id, game.homeLabel),
+      scoreSpan,
+      buildTeamSpan(game.away_team_id, game.awayLabel),
+      timeSpan,
+    )
+    list.appendChild(li)
+  }
+
+  container.innerHTML = ''
+  container.appendChild(list)
 }

@@ -2,48 +2,66 @@
 // "Por definir"); applyTeamCrossReference() parchea solo las casillas
 // que quedaron pendientes de cruce con /get/teams, sin tocar el resto
 // (10_knockout_tree.md §5).
+function buildTeamSlot(side, slot) {
+  const div = document.createElement('div')
+  div.className = 'knockout-team'
+  div.dataset.side = side
+  div.dataset.teamId = slot.teamId
+  if (slot.needsCrossref) div.dataset.needsCrossref = 'true'
+  div.textContent = slot.text
+  return div
+}
+
+function buildMatch(game) {
+  const match = document.createElement('div')
+  match.className = 'knockout-match'
+  match.dataset.gameId = game.id
+
+  match.appendChild(buildTeamSlot('home', game.home))
+  if (game.scoreText) {
+    const score = document.createElement('div')
+    score.className = 'knockout-score'
+    score.textContent = game.scoreText
+    match.appendChild(score)
+  }
+  match.appendChild(buildTeamSlot('away', game.away))
+
+  return match
+}
+
 export function renderBracket(container, rounds) {
   if (!container) return
 
+  container.innerHTML = ''
+
   if (rounds.length === 0) {
-    container.innerHTML = `<p class="knockout-tree-empty">No hay partidos de fase eliminatoria disponibles.</p>`
+    const empty = document.createElement('p')
+    empty.className = 'knockout-tree-empty'
+    empty.textContent = 'No hay partidos de fase eliminatoria disponibles.'
+    container.appendChild(empty)
     return
   }
 
-  container.innerHTML = `
-    <div class="knockout-tree">
-      ${rounds
-        .map(
-          (round) => `
-        <div class="knockout-round" data-round-type="${round.type}">
-          <h3>${round.label}</h3>
-          ${round.games
-            .map(
-              (game) => `
-            <div class="knockout-match" data-game-id="${game.id}">
-              <div
-                class="knockout-team"
-                data-side="home"
-                data-team-id="${game.home.teamId}"
-                ${game.home.needsCrossref ? 'data-needs-crossref="true"' : ''}
-              >${game.home.text}</div>
-              ${game.scoreText ? `<div class="knockout-score">${game.scoreText}</div>` : ''}
-              <div
-                class="knockout-team"
-                data-side="away"
-                data-team-id="${game.away.teamId}"
-                ${game.away.needsCrossref ? 'data-needs-crossref="true"' : ''}
-              >${game.away.text}</div>
-            </div>
-          `,
-            )
-            .join('')}
-        </div>
-      `,
-        )
-        .join('')}
-    </div>
-  `
+  const tree = document.createElement('div')
+  tree.className = 'knockout-tree'
+
+  for (const round of rounds) {
+    const roundDiv = document.createElement('div')
+    roundDiv.className = 'knockout-round'
+    roundDiv.dataset.roundType = round.type
+
+    const heading = document.createElement('h3')
+    heading.textContent = round.label
+    roundDiv.appendChild(heading)
+
+    for (const game of round.games) {
+      roundDiv.appendChild(buildMatch(game))
+    }
+
+    tree.appendChild(roundDiv)
+  }
+
+  container.appendChild(tree)
 }
 
 export function applyTeamCrossReference(container, { teamsById, failed }) {

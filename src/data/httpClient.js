@@ -1,6 +1,6 @@
 import { ENDPOINTS } from './endpoints.js'
 import { coreRequest, HttpError } from './requestCore.js'
-import { getToken, clearToken } from './auth.js'
+import { getToken, clearToken, isTokenExpired } from './auth.js'
 
 // Cliente HTTP (05_shared_infrastructure.md §1): única pieza autorizada
 // a construir y enviar peticiones a los endpoints de datos.
@@ -13,6 +13,15 @@ export class SessionExpiredError extends Error {
 
 async function authenticatedGet(path, cacheKey, onCountdownTick) {
   const token = getToken()
+
+  // Chequeo proactivo (05_shared_infrastructure.md): si el token ya
+  // expiró según su propio `exp`, no tiene sentido esperar el 401 real
+  // de la API para reaccionar.
+  if (isTokenExpired(token)) {
+    clearToken()
+    throw new SessionExpiredError()
+  }
+
   try {
     return await coreRequest(path, {
       method: 'GET',
@@ -24,6 +33,12 @@ async function authenticatedGet(path, cacheKey, onCountdownTick) {
     // 03_business_rules.md §3: ante 401, limpiar el token guardado.
     // Nunca window.location.reload() — el caller decide cómo reautenticar.
     if (error instanceof HttpError && error.status === 401) {
+      // Si el token vigente ya cambió (logout + login nuevo mientras esta
+      // petición seguía en vuelo), este 401 es de una sesión que ya no
+      // existe: no debe pisar el token que la reemplazó.
+      if (getToken() !== token) {
+        throw error
+      }
       clearToken()
       throw new SessionExpiredError()
     }

@@ -187,7 +187,7 @@ Distinguir, dentro del overlay de login, entre "primera apertura" y "reapertura 
 
 ### Alcance — Parte B: Botón de "Cerrar sesión"
 
-- Nuevo control de logout manual, ubicado en `src/presentation/` (junto a `statusBar.js`, no dentro de ningún módulo de dominio), que dispara exactamente el mismo mecanismo que el 401 real: `clearToken()` + `publish('session', {active:false})`.
+- Nuevo control de logout manual, ubicado en `src/presentation/` (junto a `statusBar.js`, no dentro de ningún módulo de dominio), que dispara el mismo mecanismo base que el 401 real: `clearToken()` + `publish('session', {active:false})`. *(Actualizado en Fase 7: el logout manual ya no es idéntico al 401 real — también llama a `clearCache()` para vaciar la caché de `localStorage` de la sesión cerrada, una diferencia intencional. Ver `05_shared_infrastructure.md §3`.)*
 - Corrección necesaria y asociada en `06_live_ticker.md`: hoy, `liveTicker.js` solo detiene su polling (`stopped = true`) dentro de su propio manejo de `SessionExpiredError` — nunca al recibir `'session': {active:false}` por otra vía (como este nuevo botón). Se agrega la rama simétrica en el `subscribe('session', ...)` ya existente en `liveTicker.js`, para que cualquier cierre de sesión (401 real o logout manual) detenga el polling.
 
 ### Alcance — Parte C: Ambigüedad de marcador "0-0" en partidos no iniciados
@@ -209,7 +209,55 @@ No es una corrección de bug — es una reverificación explícita, con evidenci
 - Ninguna prohibición absoluta aparece en el código nuevo o modificado.
 - Los 5 módulos y el login siguen funcionando sin regresión tras estos cambios.
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Completada
+
+**Nota de cierre:** durante la reverificación de la Parte D se encontró una condición de carrera real (no solo un caso teórico) en `knockoutTree.js`: si `/get/teams` fallaba antes de que el bracket terminara de dibujarse en el DOM, el slot pendiente de cruce quedaba congelado en "Verificando equipo…" en vez de marcarse como "Error al cruzar equipo", incumpliendo `10_knockout_tree.md` §5. Se corrigió con tres variables de módulo (`bracketRendered`, `teamsOutcome`, `crossReferenceApplied`) y una función idempotente (`tryApplyCrossReference()`, líneas 34-45) llamada desde ambos flujos de carga (`runGamesLoad` y `runTeamsLoad`), que no depende del orden de resolución de `games`/`teams`. Reconfirmado por lectura directa de código el 19 de julio de 2026, tras una discrepancia detectada entre el estado registrado en una copia del ROADMAP y el estado real del código — el código ya tenía la corrección aplicada correctamente.
+
+---
+
+## Fase 7 — Refuerzo de Seguridad de Sesión y Autenticación (Pre-Defensa)
+
+**Objetivo:** reforzar el manejo del JWT una vez emitido y el cierre de sesión, de cara a la defensa oral, donde el profesor intenta ataques reales (manipular `localStorage`/sesión desde DevTools) para evaluar qué tan protegido está el manejo de credenciales — sin backend propio, BFF ni cookies `HttpOnly`, fuera del alcance de un proyecto frontend puro.
+
+**Origen:** esta fase no proviene del enunciado original ni de `IDEAS_A_VALIDAR.md` — nace de una ronda de auditoría de seguridad solicitada explícitamente por el usuario. La prioridad declarada no es proteger la contraseña en el login (la API es externa, fuera de control), sino proteger el JWT una vez emitido, que es lo que vive en `localStorage` y representa al usuario autenticado durante toda la sesión.
+
+**Documentos relevantes:** `03_business_rules.md` (JWT, manejo de 401), `05_shared_infrastructure.md` (Cliente HTTP, Gestor de Caché, Componente de Autenticación), `08_integrity_monitor.md` (unificación del 401 en sus chequeos, sin tocar su `AbortController`/timeout de 5s).
+
+### Alcance — Parte A: XSS vía `innerHTML`
+
+Reemplazo de `innerHTML` por `createElement`/`textContent`/`dataset` en los 4 módulos que insertaban datos provenientes de la API (nombres de equipo, marcadores, fechas) sin escapar: `liveTickerView.js`, `knockoutTreeView.js`, `bilingualSearchView.js`, `reportExporterView.js`. Sin cambios de comportamiento visual ni de estructura del DOM (mismas clases y atributos `data-*`); `integrityMonitorView.js` no se tocó porque sus valores no provienen de la API.
+
+### Alcance — Parte B: Logout completo
+
+- `logoutButton.js` ahora también llama a `clearCache()` (nueva capacidad de `cache.js`, ver `05_shared_infrastructure.md §3`), además de `clearToken()` y `publish('session', {active:false})`.
+- `httpClient.js` agrega un guard: si el token vigente ya cambió cuando llega un 401 (logout + login nuevo mientras una petición vieja seguía en vuelo), ese 401 obsoleto no pisa la sesión nueva.
+
+### Alcance — Parte C: Unificación del manejo de 401 en el Monitor de Integridad
+
+`checkEndpointHealth()` en `store.js` ahora limpia el token y publica `session:{active:false}` ante un 401, igual que el resto de los dominios — antes, un 401 en sus 4 chequeos solo se mostraba como "Error 401" en rojo, sin disparar el mecanismo de sesión expirada. El `AbortController`/timeout de 5s propio del módulo no se modificó. Duplicación de criterio con el Cliente HTTP documentada a propósito en `05_shared_infrastructure.md §1`.
+
+### Alcance — Parte D: Validación proactiva de expiración del JWT
+
+Nueva función `isTokenExpired()` en `auth.js` (decodifica el payload del token para leer `exp`, sin verificar firma — ver `03_business_rules.md §1`). Se chequea en dos puntos: al arrancar la app (`login.js`, antes de omitir el overlay de login) y antes de cada petición autenticada (`httpClient.js`).
+
+### Alcance — Parte E: Credenciales de prueba fuera del repositorio
+
+Las entradas de la allowlist de `.claude/settings.json` que contenían credenciales de prueba en texto plano se movieron a `.claude/settings.local.json` (ya ignorado globalmente, mismo patrón que `.env.development.local`). No se reescribió el historial de Git: credenciales de prueba no reutilizadas fuera del proyecto, confirmado con el usuario.
+
+### Alcance — Parte F: Content-Security-Policy
+
+Meta tag CSP agregado en `index.html` (`default-src 'self'`; `connect-src` habilita `worldcup26.ir` y el `dev-proxy` local; `style-src 'self' 'unsafe-inline'` para no romper el HMR de Vite en desarrollo). Se omitió `frame-ancestors` a propósito: los navegadores la ignoran cuando viene por `<meta>`, solo aplica como header HTTP real, fuera de alcance sin backend propio.
+
+**Validación y Cierre (Definition of Done):**
+- Los 5 módulos siguen renderizando visualmente igual tras el cambio de `innerHTML` a `createElement` (verificado con login real contra la API y comparación del HTML resultante).
+- Un 401 real forzado en el Monitor de Integridad dispara `clearToken()` + `session:{active:false}` + reaparición del overlay de login (verificado con interceptación de red determinística).
+- El logout manual limpia token y caché de `localStorage` (verificado: 0 claves `wc26_cache:*` en `localStorage` tras el logout).
+- Un token corrupto o con `exp` vencido en `localStorage` no omite el overlay de login al arrancar; un token válido sí sobrevive un cierre y reapertura completos del navegador (verificado con perfil persistente).
+- Ninguna prohibición absoluta (`alert()`, `.then()`/`.catch()`, `window.location.reload()`) aparece en el código nuevo o modificado (verificado por búsqueda sobre todo `src/`).
+- Los escenarios de resiliencia ya validados en fases previas (429 con countdown, 500 con backoff, 401 real) siguen comportándose igual contra `dev-proxy.cjs` tras estos cambios (revalidado en vivo).
+- `.claude/settings.json` (versionado en Git) no contiene ninguna credencial de prueba en texto plano.
+
+**Estado:** ✅ Completada
 
 ---
 

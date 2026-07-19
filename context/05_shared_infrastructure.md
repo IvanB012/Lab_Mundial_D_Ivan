@@ -34,6 +34,8 @@ Necesario para conocer:
 
 Responsable de ejecutar las llamadas `fetch` hacia los endpoints descritos en `04_api_contract.md`, aplicando el encabezado de autenticación y las reglas de reintento y backoff definidas en `03_business_rules.md`. Es la única pieza autorizada a construir y enviar peticiones de red.
 
+**Nota de duplicación conocida (`00_assistant_contract.md §1`, Single Source of Truth):** `checkEndpointHealth()` (Monitor de Integridad, en `store.js`) es una excepción ya documentada a esta exclusividad — arma su propio `fetch` sobre el envoltorio de `AbortController` (sección 7 de este documento) en vez de pasar por el Cliente HTTP, para no acoplar el timeout de 5s del módulo al backoff del Cliente HTTP. Desde la fase de refuerzo de seguridad (`ROADMAP.md`), esa función también reimplementa por su cuenta el criterio "ante un 401, limpiar el token y publicar `session:{active:false}`", que `authenticatedGet()` ya implementa aquí. Es una duplicación real y consciente (unas pocas líneas), no un error: unificarla exigiría que el Monitor de Integridad pasara por el Cliente HTTP, acoplando su timeout propio al backoff exponencial del Cliente HTTP y rompiendo el aislamiento entre sus 4 chequeos que exige `08_integrity_monitor.md §5-6`.
+
 ## 2. Gestor de Estado Global
 
 Mantiene en memoria la información vigente de cada dominio de datos (partidos, equipos, estadios, grupos) recibida desde el Cliente HTTP. Expone un mecanismo de suscripción para que los módulos reaccionen a cambios sin tener que consultar activamente en cada ciclo.
@@ -41,6 +43,8 @@ Mantiene en memoria la información vigente de cada dominio de datos (partidos, 
 ## 3. Gestor de Caché
 
 Responsable de guardar en `localStorage` la última respuesta exitosa de cada endpoint y de recuperarla cuando una petición nueva falla, según la regla de modo offline definida en `03_business_rules.md`. No decide cuándo mostrar los datos cacheados en pantalla — eso es responsabilidad del módulo consumidor.
+
+También expone `clearCache()`, que vacía toda la caché guardada — capacidad agregada para el cierre de sesión manual (fase de refuerzo de seguridad, `ROADMAP.md`), disparada por el control de logout junto con `clearToken()`.
 
 ## 4. Sistema de Eventos
 
@@ -57,6 +61,8 @@ Cualquier módulo que dispare uno de estos tres estados (Fase 3) debe publicar u
 ## 5. Autenticación (Componente)
 
 Pieza responsable de obtener y almacenar el token JWT, y de exponerlo al Cliente HTTP para construir el encabezado `Authorization`. El comportamiento normativo (qué hacer ante un 401) es propiedad de `03_business_rules.md`; este componente solo lo ejecuta.
+
+También expone `isTokenExpired()`, que decodifica el payload del token para detectar proactivamente su expiración (campo `exp`) sin contactar al servidor. El criterio de cuándo y dónde se usa esta función es propiedad de `03_business_rules.md §1`; este componente solo la implementa.
 
 ## 6. Sistema de Notificaciones (Toasts)
 

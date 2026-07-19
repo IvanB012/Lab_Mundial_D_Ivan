@@ -1,5 +1,5 @@
 import './login.css'
-import { login, getToken } from '../data/auth.js'
+import { login, getToken, isTokenExpired, clearToken } from '../data/auth.js'
 import { publish, subscribe } from '../state/eventBus.js'
 
 // Pieza de Login (ROADMAP.md, ítem adicional de Fase 3): se dispara una
@@ -37,16 +37,24 @@ export function mountLogin(rootElement, onFirstSuccess) {
 
   // Si ya hay un token guardado de una sesión previa (auth.js, Fase 1),
   // se omite el overlay y se arranca directo — sin volver a pedir
-  // credenciales en cada refresh. No se valida el token contra el
-  // servidor aquí: si estuviera vencido, el primer 401 real de
-  // cualquier módulo dispara SessionExpiredError → 'session':{active:false}
+  // credenciales en cada refresh. Se valida `exp` localmente (isTokenExpired,
+  // sin contactar al servidor): si ya venció, se descarta acá mismo en vez
+  // de esperar el primer 401 real. Si el servidor lo rechazara por otra
+  // razón (revocado, forjado, etc.), el primer 401 real de cualquier
+  // módulo igual dispara SessionExpiredError → 'session':{active:false}
   // → el listener de abajo vuelve a mostrar el overlay (mismo mecanismo
   // de recuperación ya construido para Bug 2).
-  if (getToken()) {
+  const storedToken = getToken()
+  if (storedToken && !isTokenExpired(storedToken)) {
     overlay.hidden = true
     hasStartedOnce = true
     publish('session', { active: true })
     onFirstSuccess()
+  } else if (storedToken) {
+    // Token presente pero vencido (o corrupto): se descarta en silencio,
+    // se muestra el login normal — no es una "sesión expirada" activa
+    // porque el usuario nunca llegó a usar la app en este arranque.
+    clearToken()
   }
 
   form.addEventListener('submit', async (event) => {

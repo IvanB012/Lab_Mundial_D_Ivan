@@ -12,3 +12,12 @@ export function getCachedResponse(key) {
   if (!raw) return null
   return JSON.parse(raw)
 }
+
+// Cierre de sesión (logoutButton.js): borra la caché de dominio para que
+// la próxima sesión no arranque mostrando datos "offline" de la anterior.
+export function clearCache() {
+  for (let i = localStorage.length - 1; i >= 0; i -= 1) {
+    const key = localStorage.key(i)
+    if (key && key.startsWith(CACHE_PREFIX)) localStorage.removeItem(key)
+  }
+}

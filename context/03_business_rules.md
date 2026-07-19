@@ -32,6 +32,7 @@ Necesario para conocer:
 - Ninguna llamada a un endpoint de datos puede omitir este encabezado.
 - El token se obtiene autenticándose contra la API antes de realizar cualquier petición de datos.
 - La forma de obtener el token y el endpoint de autenticación se definen en 04_api_contract.md
+- Además del manejo reactivo del 401 (sección 3), el cliente detecta la expiración de forma proactiva decodificando el payload del JWT y comparando su campo `exp` contra la hora actual (`isTokenExpired()`, expuesta por el Componente de Autenticación — `05_shared_infrastructure.md §5`). Es una detección de expiración, no una verificación de firma: no puede confirmar que el token sea auténtico ni detectar uno forjado, solo que venció según su propio `exp` — limitación consistente con la nota de `04_api_contract.md §1` sobre que la API real no valida el contenido del token en `GET /get/*`.
 
 ## 2. `async/await` Exclusivo
 

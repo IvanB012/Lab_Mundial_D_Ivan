@@ -14,43 +14,42 @@ export function renderShell(container) {
   `
 }
 
+function buildEntry(nameEn, nameFa, language) {
+  const li = document.createElement('li')
+  li.dataset.nameEn = nameEn
+  li.dataset.nameFa = nameFa
+  li.textContent = language === 'en' ? nameEn : nameFa
+  return li
+}
+
 // Primera pintura de las listas, ya en el idioma vigente en ese momento
 // (09 §5-6: se lee al aplicar los datos, no al solicitarlos).
 export function renderData(container, { teams, stadiums, language }) {
   if (!container) return
 
   const listsEl = container.querySelector('.bilingual-search-lists')
+  listsEl.innerHTML = ''
 
-  const teamItems = teams
-    .map(
-      (team) => `
-      <li data-name-en="${team.name_en}" data-name-fa="${team.name_fa}">
-        ${language === 'en' ? team.name_en : team.name_fa}
-      </li>
-    `,
-    )
-    .join('')
+  const teamsBlock = document.createElement('div')
+  teamsBlock.className = 'bilingual-search-teams-block'
+  const teamsHeading = document.createElement('h3')
+  teamsHeading.textContent = 'Equipos'
+  const teamsList = document.createElement('ul')
+  teamsList.className = 'bilingual-search-teams'
+  for (const team of teams) teamsList.appendChild(buildEntry(team.name_en, team.name_fa, language))
+  teamsBlock.append(teamsHeading, teamsList)
 
-  const stadiumItems = stadiums
-    .map(
-      (stadium) => `
-      <li data-name-en="${stadium.name_en}" data-name-fa="${stadium.name_fa}">
-        ${language === 'en' ? stadium.name_en : stadium.name_fa}
-      </li>
-    `,
-    )
-    .join('')
+  const stadiumsBlock = document.createElement('div')
+  stadiumsBlock.className = 'bilingual-search-stadiums-block'
+  const stadiumsHeading = document.createElement('h3')
+  stadiumsHeading.textContent = 'Estadios'
+  const stadiumsList = document.createElement('ul')
+  stadiumsList.className = 'bilingual-search-stadiums'
+  for (const stadium of stadiums)
+    stadiumsList.appendChild(buildEntry(stadium.name_en, stadium.name_fa, language))
+  stadiumsBlock.append(stadiumsHeading, stadiumsList)
 
-  listsEl.innerHTML = `
-    <div class="bilingual-search-teams-block">
-      <h3>Equipos</h3>
-      <ul class="bilingual-search-teams">${teamItems}</ul>
-    </div>
-    <div class="bilingual-search-stadiums-block">
-      <h3>Estadios</h3>
-      <ul class="bilingual-search-stadiums">${stadiumItems}</ul>
-    </div>
-  `
+  listsEl.append(teamsBlock, stadiumsBlock)
 }
 
 // El switch: recorre el DOM ya renderizado y alterna los campos, sin
