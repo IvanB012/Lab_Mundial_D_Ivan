@@ -3,6 +3,17 @@
   margin-bottom: 16px;
 }
 
+.bilingual-search-input {
+  display: block;
+  margin-bottom: 16px;
+  padding: 6px 10px;
+  max-width: 320px;
+}
+
+.bilingual-search-empty {
+  color: var(--ds-color-neutral);
+}
+
 .bilingual-search-lists {
   display: flex;
   gap: 32px;

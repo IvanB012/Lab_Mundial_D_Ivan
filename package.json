@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node tools/dev-all.cjs",
+    "dev:vite": "vite",
+    "dev:proxy": "node tools/dev-proxy.cjs",
     "build": "vite build",
     "preview": "vite preview"
   },

@@ -3,8 +3,7 @@ import { loadGames, loadTeams, loadStadiums } from '../../state/store.js'
 import { publish } from '../../state/eventBus.js'
 import { renderReport } from './reportExporterView.js'
 
-// Exportador de Reportes (07_report_exporter.md): cruza games/teams/
-// stadiums vía store.js (Fase 1), sin acceder a src/data/ directamente.
+// Exportador de Reportes (07_report_exporter.md): cruza games/teams/stadiums vía store.js.
 const RESOURCE_LABELS = {
   games: 'Partidos',
   teams: 'Equipos',
@@ -21,57 +20,63 @@ function indexById(list) {
   return map
 }
 
-// Partidos de fase eliminatoria aún no determinados (dependen de un
-// resultado previo) no traen equipo/marcador real todavía. Mismo texto
-// que 10_knockout_tree.md §5, para que ambos módulos sean consistentes.
+// Mismo texto que knockoutTree.js, para consistencia entre módulos.
 const PENDING_LABEL = 'Por definir'
 
 function hasValue(value) {
   return value !== undefined && value !== null && value !== 'null' && value !== ''
 }
 
-function buildReportRows(games, teamsById, stadiumsById) {
-  return games.map((game) => {
-    const homeTeam = teamsById?.get(game.home_team_id)
-    const awayTeam = teamsById?.get(game.away_team_id)
-    const stadium = stadiumsById?.get(game.stadium_id)
-
-    const matchup =
-      hasValue(game.home_team_name_en) && hasValue(game.away_team_name_en)
-        ? `${game.home_team_name_en} vs ${game.away_team_name_en}`
-        : PENDING_LABEL
-
-    const score =
-      hasValue(game.home_score) && hasValue(game.away_score)
-        ? `${game.home_score} - ${game.away_score}`
-        : PENDING_LABEL
-
-    return {
-      id: game.id,
-      matchup,
-      score,
-      date: game.local_date,
-      stadiumText: !stadiumsById
-        ? 'No disponible (Estadios no cargó)'
-        : stadium
-          ? `${stadium.name_en}, ${stadium.city_en}`
-          : 'No disponible',
-      teamCodesText: !teamsById
-        ? 'No disponible (Equipos no cargó)'
-        : `${homeTeam?.fifa_code ?? '?'} - ${awayTeam?.fifa_code ?? '?'}`,
-    }
-  })
+function buildStadiumText(stadiumsById, stadium) {
+  if (!stadiumsById) return 'No disponible (Estadios no cargó)'
+  return stadium ? `${stadium.name_en}, ${stadium.city_en}` : 'No disponible'
 }
 
-async function loadReportData() {
+function buildTeamCodesText(teamsById, homeTeam, awayTeam) {
+  if (!teamsById) return 'No disponible (Equipos no cargó)'
+  return `${homeTeam?.fifa_code ?? '?'} - ${awayTeam?.fifa_code ?? '?'}`
+}
+
+function buildReportRow(game, teamsById, stadiumsById) {
+  const homeTeam = teamsById?.get(game.home_team_id)
+  const awayTeam = teamsById?.get(game.away_team_id)
+  const stadium = stadiumsById?.get(game.stadium_id)
+
+  const matchup =
+    hasValue(game.home_team_name_en) && hasValue(game.away_team_name_en)
+      ? `${game.home_team_name_en} vs ${game.away_team_name_en}`
+      : PENDING_LABEL
+
+  const score =
+    hasValue(game.home_score) && hasValue(game.away_score)
+      ? `${game.home_score} - ${game.away_score}`
+      : PENDING_LABEL
+
+  return {
+    id: game.id,
+    matchup,
+    score,
+    date: game.local_date,
+    stadiumText: buildStadiumText(stadiumsById, stadium),
+    teamCodesText: buildTeamCodesText(teamsById, homeTeam, awayTeam),
+  }
+}
+
+function buildReportRows(games, teamsById, stadiumsById) {
+  return games.map((game) => buildReportRow(game, teamsById, stadiumsById))
+}
+
+async function fetchAllResources() {
   const [gamesResult, teamsResult, stadiumsResult] = await Promise.allSettled([
     loadGames(handleCountdownTick),
     loadTeams(handleCountdownTick),
     loadStadiums(handleCountdownTick),
   ])
   publish('countdown', { secondsRemaining: 0 })
+  return { games: gamesResult, teams: teamsResult, stadiums: stadiumsResult }
+}
 
-  const results = { games: gamesResult, teams: teamsResult, stadiums: stadiumsResult }
+function summarizeResults(results) {
   const anyStale = Object.values(results).some(
     (result) => result.status === 'fulfilled' && result.value.stale,
   )
@@ -82,16 +87,20 @@ async function loadReportData() {
     .map(([key]) => RESOURCE_LABELS[key])
 
   const teamsById =
-    teamsResult.status === 'fulfilled' ? indexById(teamsResult.value.data.teams) : null
+    results.teams.status === 'fulfilled' ? indexById(results.teams.value.data.teams) : null
   const stadiumsById =
-    stadiumsResult.status === 'fulfilled' ? indexById(stadiumsResult.value.data.stadiums) : null
+    results.stadiums.status === 'fulfilled' ? indexById(results.stadiums.value.data.stadiums) : null
 
   const rows =
-    gamesResult.status === 'fulfilled'
-      ? buildReportRows(gamesResult.value.data.games, teamsById, stadiumsById)
+    results.games.status === 'fulfilled'
+      ? buildReportRows(results.games.value.data.games, teamsById, stadiumsById)
       : null
 
   return { rows, missingResources }
+}
+
+async function loadReportData() {
+  return summarizeResults(await fetchAllResources())
 }
 
 export async function startReportExporter() {

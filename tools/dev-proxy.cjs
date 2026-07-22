@@ -12,7 +12,8 @@ const path = require('path');
 const { URL } = require('url');
 
 const PORT = Number(process.env.PORT) || 8000;
-const ROOT = __dirname;
+// Vive en /tools; ROOT debe seguir siendo la raíz del proyecto para serveStatic().
+const ROOT = path.join(__dirname, '..');
 const UPSTREAM = 'https://worldcup26.ir';
 
 // Prefijos que se reenvían a la API (todo lo demás se sirve como archivo).

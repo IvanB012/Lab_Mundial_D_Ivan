@@ -1,16 +1,13 @@
 import { subscribe } from '../state/eventBus.js'
 
-// Barra de Estado Global (dashboard_design.md §2, layout.md §2).
-// Se alimenta exclusivamente del Sistema de Eventos de src/state/ — nunca
-// consulta src/data/ ni a ningún módulo directamente (dashboard_design.md §3).
-// Vocabulario de topics fijado en 05_shared_infrastructure.md §4.
+// Barra de Estado Global (dashboard_design.md §2-3, layout.md §2): solo consume el Sistema de Eventos.
 const viewState = {
   sessionActive: null, // null = sin datos todavía (ningún módulo ha publicado aún)
   secondsRemaining: null,
   stale: false,
 }
 
-function render(root) {
+function renderSessionSection(root) {
   const sessionText =
     viewState.sessionActive === null
       ? 'Sesión: sin datos'
@@ -23,41 +20,53 @@ function render(root) {
     <span class="status-label-full ${sessionClass}">${sessionText}</span>
     <span class="status-label-abbr ${sessionClass}">${viewState.sessionActive ? 'Activo' : 'Sesión'}</span>
   `
-
-  const countdownSection = root.querySelector('[data-section="countdown"]')
-  if (viewState.secondsRemaining !== null) {
-    countdownSection.hidden = false
-    countdownSection.innerHTML = `
-      <span class="status-label-full ds-countdown">Reintentando en ${viewState.secondsRemaining}s</span>
-      <span class="status-label-abbr ds-countdown">${viewState.secondsRemaining}s</span>
-    `
-  } else {
-    countdownSection.hidden = true
-    countdownSection.innerHTML = ''
-  }
-
-  const offlineSection = root.querySelector('[data-section="offline"]')
-  if (viewState.stale) {
-    offlineSection.hidden = false
-    offlineSection.innerHTML = `
-      <span class="status-label-full ds-offline">Datos no actualizados</span>
-      <span class="status-label-abbr ds-offline">Offline</span>
-    `
-  } else {
-    offlineSection.hidden = true
-    offlineSection.innerHTML = ''
-  }
 }
 
-export function mountStatusBar(container) {
-  container.innerHTML = `
+function renderCountdownSection(root) {
+  const countdownSection = root.querySelector('[data-section="countdown"]')
+  if (viewState.secondsRemaining === null) {
+    countdownSection.hidden = true
+    countdownSection.innerHTML = ''
+    return
+  }
+  countdownSection.hidden = false
+  countdownSection.innerHTML = `
+    <span class="status-label-full ds-countdown">Reintentando en ${viewState.secondsRemaining}s</span>
+    <span class="status-label-abbr ds-countdown">${viewState.secondsRemaining}s</span>
+  `
+}
+
+function renderOfflineSection(root) {
+  const offlineSection = root.querySelector('[data-section="offline"]')
+  if (!viewState.stale) {
+    offlineSection.hidden = true
+    offlineSection.innerHTML = ''
+    return
+  }
+  offlineSection.hidden = false
+  offlineSection.innerHTML = `
+    <span class="status-label-full ds-offline">Datos no actualizados</span>
+    <span class="status-label-abbr ds-offline">Offline</span>
+  `
+}
+
+function render(root) {
+  renderSessionSection(root)
+  renderCountdownSection(root)
+  renderOfflineSection(root)
+}
+
+function buildStatusBarMarkup() {
+  return `
     <div class="status-bar">
-      <div class="status-section" data-section="session"></div>
-      <div class="status-section" data-section="countdown" hidden></div>
-      <div class="status-section" data-section="offline" hidden></div>
+      <div class="status-section" data-section="session" aria-live="polite"></div>
+      <div class="status-section" data-section="countdown" aria-live="polite" hidden></div>
+      <div class="status-section" data-section="offline" aria-live="polite" hidden></div>
     </div>
   `
+}
 
+function wireStatusSubscriptions(container) {
   subscribe('session', ({ active }) => {
     viewState.sessionActive = active
     render(container)
@@ -72,6 +81,10 @@ export function mountStatusBar(container) {
     viewState.stale = stale
     render(container)
   })
+}
 
+export function mountStatusBar(container) {
+  container.innerHTML = buildStatusBarMarkup()
+  wireStatusSubscriptions(container)
   render(container)
 }

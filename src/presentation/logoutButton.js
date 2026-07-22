@@ -2,12 +2,7 @@ import { clearToken } from '../data/auth.js'
 import { clearCache } from '../data/cache.js'
 import { publish } from '../state/eventBus.js'
 
-// Cierre de sesión manual (ROADMAP.md Fase 6, Parte B). Dispara
-// exactamente el mismo mecanismo que un 401 real (clearToken() +
-// publish('session', {active:false})), en vez de un flujo propio.
-// No lee ni guarda estado de sesión: statusBar.js sigue siendo la
-// única fuente de verdad de lo que se muestra sobre la sesión, esta
-// pieza solo dispara la acción.
+// Cierre de sesión manual (ROADMAP.md Fase 6 Parte B): dispara el mismo mecanismo que un 401 real.
 export function mountLogoutButton(container) {
   const button = document.createElement('button')
   button.type = 'button'
@@ -17,7 +12,7 @@ export function mountLogoutButton(container) {
   button.addEventListener('click', () => {
     clearToken()
     clearCache()
-    publish('session', { active: false })
+    publish('session', { active: false, reason: 'manual' })
   })
 
   container.appendChild(button)

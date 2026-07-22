@@ -188,3 +188,44 @@ h3 {
   color: var(--ds-color-warning);
   font-weight: 600;
 }
+
+/* --- Alto contraste (design_system.md §3, Fase 8 Parte F) ---
+   Sobreescribe las mismas variables semánticas de arriba; ningún componente duplica su propio color. */
+:root[data-contrast='high'] {
+  --ds-color-info: #66b2ff;
+  --ds-color-info-bg: #002347;
+  --ds-color-warning: #ffcc00;
+  --ds-color-warning-bg: #3d2f00;
+  --ds-color-success: #33ff33;
+  --ds-color-success-bg: #003300;
+  --ds-color-error: #ff5c5c;
+  --ds-color-error-bg: #4d0000;
+  --ds-color-neutral: #ffffff;
+  --ds-color-neutral-bg: #333333;
+}
+
+/* Fondos hardcodeados (no variables): la única excepción que necesita reglas explícitas por selector. */
+:root[data-contrast='high'] body,
+:root[data-contrast='high'] .dashboard,
+:root[data-contrast='high'] .dashboard-status-bar,
+:root[data-contrast='high'] .dashboard-tab-bar,
+:root[data-contrast='high'] .content-area,
+:root[data-contrast='high'] .login-form,
+:root[data-contrast='high'] .a11y-panel {
+  background: #000;
+  color: #fff;
+}
+
+/* El overlay tiene su propio fondo semitransparente (login.css): en alto contraste se vuelve negro puro, sin transparencia. */
+:root[data-contrast='high'] .login-overlay {
+  background: #000;
+}
+
+:root[data-contrast='high'] h3 {
+  color: #fff;
+}
+
+/* Texto negro sobre fondo saturado: mismo par que alerta bajo contraste normal, invertido aquí a propósito. */
+:root[data-contrast='high'] .ds-button--primary {
+  color: #000;
+}

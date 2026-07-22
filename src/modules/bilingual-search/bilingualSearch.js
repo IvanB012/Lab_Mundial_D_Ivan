@@ -1,12 +1,17 @@
 import './bilingualSearch.css'
 import { loadTeams, loadStadiums } from '../../state/store.js'
 import { publish } from '../../state/eventBus.js'
-import { renderShell, renderData, applyLanguage, updateToggleLabel } from './bilingualSearchView.js'
+import {
+  renderShell,
+  renderData,
+  applyLanguage,
+  updateToggleLabel,
+  applyFilter,
+} from './bilingualSearchView.js'
 
-// Buscador Bilingüe (09_bilingual_search.md): carga teams/stadiums una
-// sola vez vía store.js (Fase 1, Capa de Estado) — este SÍ es dominio
-// real, a diferencia del ping de diagnóstico de Monitor de Integridad.
+// Buscador Bilingüe (09_bilingual_search.md): carga teams/stadiums una sola vez vía store.js.
 let currentLanguage = 'en'
+let searchQuery = ''
 
 function handleCountdownTick(secondsRemaining) {
   publish('countdown', { secondsRemaining })
@@ -30,22 +35,34 @@ async function loadBilingualData() {
   }
 }
 
-export async function startBilingualSearch() {
-  const panelElement = document.querySelector('section[data-module-id="bilingual-search"]')
-  renderShell(panelElement)
-
+// No-op si todavía no hay filas: nunca rompe ni muestra undefined (09 §5).
+function wireLanguageToggle(panelElement) {
   const toggleButton = panelElement.querySelector('.bilingual-search-toggle')
   toggleButton.addEventListener('click', () => {
     currentLanguage = currentLanguage === 'en' ? 'fa' : 'en'
     updateToggleLabel(panelElement, currentLanguage)
-    // No-op si todavía no hay filas (solo el placeholder "Cargando…") —
-    // nunca rompe ni muestra undefined (09 §5).
     applyLanguage(panelElement, currentLanguage)
+    applyFilter(panelElement, searchQuery, currentLanguage)
   })
+}
+
+function wireSearchInput(panelElement) {
+  const searchInput = panelElement.querySelector('.bilingual-search-input')
+  searchInput.addEventListener('input', () => {
+    searchQuery = searchInput.value
+    applyFilter(panelElement, searchQuery, currentLanguage)
+  })
+}
+
+export async function startBilingualSearch() {
+  const panelElement = document.querySelector('section[data-module-id="bilingual-search"]')
+  renderShell(panelElement)
+  wireLanguageToggle(panelElement)
+  wireSearchInput(panelElement)
 
   const { teams, stadiums } = await loadBilingualData()
 
-  // currentLanguage se lee AHORA, en el momento en que los datos llegan
-  // — no el valor que estaba activo cuando se inició la petición (09 §5-6).
+  // currentLanguage y searchQuery se leen al llegar los datos, no al iniciar la petición (09 §5-6).
   renderData(panelElement, { teams, stadiums, language: currentLanguage })
+  applyFilter(panelElement, searchQuery, currentLanguage)
 }

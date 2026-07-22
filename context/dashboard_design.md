@@ -56,9 +56,13 @@ La Barra de Estado Global se alimenta del Sistema de Notificaciones y del Estado
 - El cambio de pestaña nunca cancela procesos en curso de otros módulos (polling, chequeos, cachés en memoria); solo cambia qué se muestra.
 - Todas las notificaciones tipo toast, sin importar de qué módulo provengan, aparecen en la misma zona de la pantalla, gestionadas por el Sistema de Notificaciones compartido.
 
----
+## 5. Persistencia de la Pestaña Activa (Fase 8)
 
-## Lo que este documento NO cubre
+La última pestaña visitada se guarda en `localStorage`. Al recargar la página, el Dashboard restaura esa pestaña como activa en vez de volver siempre a la primera. Esto no afecta la carga de datos de los demás módulos: como los 5 paneles ya se montan simultáneamente desde Fase 2 (alternando `hidden`, sin destruir/recrear), todos siguen cargando sus datos en paralelo desde el arranque, sin importar cuál quede visible primero.
+
+## 6. Botón Flotante de Accesibilidad (Fase 8)
+
+Elemento fijo, superpuesto sobre el resto de la interfaz (no forma parte de ninguna de las tres zonas principales de la sección 2), visible en las cinco pestañas por igual. Expone controles de alto contraste y tamaño de letra ajustable; su comportamiento detallado y estilo visual se definen en `design_system.md`.
 
 Este documento NO define:
 

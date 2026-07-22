@@ -14,8 +14,7 @@ async function waitWithCountdown(ms, onCountdownTick) {
   }
 }
 
-// Reintenta con espera creciente (1s, 2s, 4s, 8s) ante 429/500, según
-// 03_business_rules.md §4. El countdown visible solo aplica al 429.
+// Reintenta con espera creciente ante 429/500 (03_business_rules.md §4); countdown solo en 429.
 export async function retryWithBackoff(executeAttempt, { onCountdownTick } = {}) {
   let lastResponse
 

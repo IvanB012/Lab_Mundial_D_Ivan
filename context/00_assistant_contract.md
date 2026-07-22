@@ -74,6 +74,16 @@ Claude debe priorizar código que pueda explicarse con claridad sobre código co
 
 Este documento no define qué debe demostrarse en la defensa oral ni qué preguntas puede hacer el profesor — esa información vive fuera de `/context`. Esta sección solo establece cómo debe escribirse el código para que sea defendible, no qué se evalúa en la defensa.
 
+## 5.1. Convenciones de Tamaño y Comentarios (Fase 8)
+
+Exigencia explícita del profesor, verificable durante la defensa oral:
+
+- **Límite de 25 líneas por función/bloque.** Ninguna función individual supera ese largo; si crece más, se divide en funciones más pequeñas con responsabilidad única (Principio de Responsabilidad Única, ya establecido en la sección 1 de este documento, aplicado ahora también a nivel de función, no solo de documento).
+- **Separación estricta entre obtención de datos y renderizado.** Ninguna función mezcla lógica de red/estado con manipulación del DOM — coherente con el flujo de capas ya definido en `02_architecture.md`, ahora aplicado también dentro de cada módulo, no solo entre capas.
+- **Comentarios limitados a una sola línea, solo donde sea estrictamente necesario.** No se permiten bloques de comentario explicativos ni párrafos documentando el funcionamiento del sistema dentro del código — la explicación completa se hace de forma oral durante la defensa, no por escrito.
+
+**Nota de aplicación retroactiva:** esta regla reemplaza el criterio usado en fases anteriores, donde se pidió explícitamente documentar ciertas decisiones con comentarios más largos (por ejemplo, el acoplamiento consciente señalado en `reportExporterView.js` en Fase 4, o las notas explicativas en `store.js` sobre `checkEndpointHealth()` e `isTokenExpired()`). Esos comentarios ya existentes deben revisarse y reducirse a notas de una línea como parte de la Fase 8, Parte A — no quedan como excepción histórica.
+
 ---
 
 ## 6. Prioridad en Caso de Conflicto

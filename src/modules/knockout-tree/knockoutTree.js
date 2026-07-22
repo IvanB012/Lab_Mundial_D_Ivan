@@ -3,10 +3,7 @@ import { loadGames, loadTeams } from '../../state/store.js'
 import { publish } from '../../state/eventBus.js'
 import { renderBracket, applyTeamCrossReference } from './knockoutTreeView.js'
 
-// Árbol de Eliminatorias (10_knockout_tree.md): games/teams vía store.js
-// (Fase 1) — carga de dominio real, no un ping de diagnóstico. Ambas
-// cargas son independientes: teams nunca bloquea el dibujo del bracket
-// con games (§5-6).
+// Árbol de Eliminatorias (10_knockout_tree.md §5-6): games/teams cargan en paralelo e independientes.
 const ROUND_ORDER = ['r32', 'r16', 'qf', 'sf', 'third', 'final']
 const ROUND_LABELS = {
   r32: 'Dieciseisavos de Final',
@@ -17,28 +14,19 @@ const ROUND_LABELS = {
   final: 'Final',
 }
 
-// Mismo texto base que 07_report_exporter.md, enriquecido con el
-// partido/grupo de origen real que expone home_team_label/away_team_label.
+// Mismo texto base que reportExporter.js, enriquecido con el origen real del cruce pendiente.
 const PENDING_LABEL = 'Por definir'
 
 function handleCountdownTick(secondsRemaining) {
   publish('countdown', { secondsRemaining })
 }
 
-// games y teams se cargan en paralelo (§6) y cada uno puede resolver
-// primero: applyTeamCrossReference() solo tiene algo que parchear una
-// vez que renderBracket() ya dibujó los slots pendientes. Estas tres
-// variables desacoplan "¿ya tengo el resultado de teams?" de "¿ya
-// puedo aplicarlo?", para no perder el parche cuando teams resuelve
-// antes que el bracket exista.
+// Desacoplan "¿ya tengo teams?" de "¿ya puedo aplicarlo?" sin importar quién resuelva primero.
 let bracketRendered = false
 let teamsOutcome = null
 let crossReferenceApplied = false
 
-// Idempotente y sin importar el orden de llegada: ambos llamadores
-// (runGamesLoad al terminar de dibujar, runTeamsLoad al terminar de
-// cargar) invocan esta misma función; solo la primera llamada que
-// encuentre las dos condiciones cumplidas aplica el parche.
+// Idempotente: la primera llamada (desde runGamesLoad o runTeamsLoad) que cumpla ambas condiciones aplica el parche.
 function tryApplyCrossReference(panelElement) {
   if (crossReferenceApplied || !bracketRendered || teamsOutcome === null) return
   crossReferenceApplied = true
@@ -76,6 +64,36 @@ function resolveSlot(game, side) {
   return { text: 'Verificando equipo…', needsCrossref: true, teamId }
 }
 
+function buildResolvedRound(type, byType) {
+  const roundGames = byType
+    .get(type)
+    .slice()
+    .sort((a, b) => Number(a.id) - Number(b.id))
+    .map((game) => ({
+      id: game.id,
+      home: resolveSlot(game, 'home'),
+      away: resolveSlot(game, 'away'),
+      scoreText: game.finished === 'TRUE' ? `${game.home_score} - ${game.away_score}` : '',
+    }))
+  return { type, label: ROUND_LABELS[type] ?? type, games: roundGames }
+}
+
+// Sin datos reales todavía para esta ronda (10 §5): una casilla "Por definir", nunca la ronda entera vacía.
+function buildPlaceholderSlot() {
+  return { text: PENDING_LABEL, needsCrossref: false, teamId: '' }
+}
+
+function buildPlaceholderRound(type) {
+  const placeholderGame = {
+    id: `placeholder-${type}`,
+    home: buildPlaceholderSlot(),
+    away: buildPlaceholderSlot(),
+    scoreText: '',
+  }
+  return { type, label: ROUND_LABELS[type] ?? type, games: [placeholderGame] }
+}
+
+// Las 6 rondas siempre existen (estructura fija del bracket, no depende de la API): con o sin partidos reales.
 function buildRounds(games) {
   const knockoutGames = games.filter((game) => game.type !== 'group')
   const byType = new Map()
@@ -84,19 +102,7 @@ function buildRounds(games) {
     byType.get(game.type).push(game)
   }
 
-  return ROUND_ORDER.filter((type) => byType.has(type)).map((type) => {
-    const roundGames = byType
-      .get(type)
-      .slice()
-      .sort((a, b) => Number(a.id) - Number(b.id))
-      .map((game) => ({
-        id: game.id,
-        home: resolveSlot(game, 'home'),
-        away: resolveSlot(game, 'away'),
-        scoreText: game.finished === 'TRUE' ? `${game.home_score} - ${game.away_score}` : '',
-      }))
-    return { type, label: ROUND_LABELS[type] ?? type, games: roundGames }
-  })
+  return ROUND_ORDER.map((type) => (byType.has(type) ? buildResolvedRound(type, byType) : buildPlaceholderRound(type)))
 }
 
 async function runGamesLoad(panelElement, gamesPromise) {

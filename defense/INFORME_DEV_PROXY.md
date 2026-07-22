@@ -1,5 +1,7 @@
 # Informe — Integración de `dev-proxy.cjs` para simular 401/429/500 en la defensa oral
 
+> **Nota (Fase 9, Parte B):** `dev-proxy.cjs` y `dev-all.cjs` se movieron a `/tools` después de este informe. Las rutas mencionadas abajo reflejan su ubicación en el momento en que se escribió este documento.
+
 ## 1. Problema de partida
 
 La API real (`worldcup26.ir`) no está bajo nuestro control, así que no hay forma de forzar que devuelva 401, 429 o 500 a demanda para demostrar en la defensa oral cómo la app maneja esos casos (backoff exponencial, countdown del 429, `SessionExpiredError` del 401, fallback a caché del 500).

@@ -1,7 +1,4 @@
-// Renderizado del panel de Monitor de Integridad. El semáforo (Fase 4,
-// design_system.md §3) y el badge de la razón de error usan directamente
-// status.state/status.reason, ya calculados por integrityMonitor.js —
-// esta vista solo decide cómo se pintan, nunca cuál es el estado.
+// Renderizado del semáforo (design_system.md §3): pinta status.state/reason, no decide el estado.
 function renderStatusMarkup(status) {
   const semaphore = `<span class="ds-semaphore ds-semaphore--${status.state === 'green' ? 'green' : status.state === 'red' ? 'red' : 'checking'}"></span>`
 
@@ -10,30 +7,29 @@ function renderStatusMarkup(status) {
   return `${semaphore}Rojo — <span class="ds-badge ds-badge--error">${status.reason}</span>`
 }
 
+function buildEndpointItemMarkup(endpoint) {
+  return `
+          <li data-endpoint-key="${endpoint.key}">
+            <span class="integrity-monitor-label">${endpoint.label}</span>
+            <span class="integrity-monitor-status"><span class="ds-semaphore ds-semaphore--checking"></span>En verificación…</span>
+          </li>
+        `
+}
+
 export function renderShell(container, endpoints) {
   if (!container) return
 
   container.innerHTML = `
     <div class="integrity-monitor">
       <ul class="integrity-monitor-list">
-        ${endpoints
-          .map(
-            (endpoint) => `
-          <li data-endpoint-key="${endpoint.key}">
-            <span class="integrity-monitor-label">${endpoint.label}</span>
-            <span class="integrity-monitor-status"><span class="ds-semaphore ds-semaphore--checking"></span>En verificación…</span>
-          </li>
-        `,
-          )
-          .join('')}
+        ${endpoints.map(buildEndpointItemMarkup).join('')}
       </ul>
       <button type="button" class="integrity-monitor-retry ds-button ds-button--primary">Reintentar</button>
     </div>
   `
 }
 
-// Actualiza una sola fila sin re-renderizar el resto: un timeout en un
-// endpoint no debe afectar la fila ya resuelta de otro (08 §5-6).
+// Actualiza una sola fila sin re-renderizar el resto (08 §5-6).
 export function updateEndpointStatus(container, key, status) {
   if (!container) return
   const statusEl = container.querySelector(

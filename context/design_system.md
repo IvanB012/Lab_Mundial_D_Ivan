@@ -51,7 +51,10 @@ Los valores hexadecimales exactos se fijan al implementar (no forman parte de es
 - **Indicador tipo semáforo.** Círculo o punto de color (verde/ámbar/rojo) usado por el Monitor de Integridad, pero definido aquí como componente reutilizable por si otro módulo necesita representar un estado de salud similar.
 - **Badge de estado.** Etiqueta pequeña con fondo de color semántico y texto corto (por ejemplo, "Por definir", "Tiempo agotado", "Offline"), reutilizada por el Bracket de Eliminatorias, el Monitor de Integridad y cualquier módulo que necesite marcar un estado puntual.
 - **Botón primario / secundario.** Un único estilo de botón primario (para acciones principales como "Exportar" o "Reintentar") y uno secundario (para acciones de menor jerarquía), compartidos por todos los módulos.
-- **Contador / countdown.** Componente numérico con animación de cuenta atrás, usado por la Barra de Estado Global y por cualquier módulo que necesite mostrar un countdown propio (por ejemplo, Live Ticker durante su Reto de Resiliencia).
+- **Botón Flotante de Accesibilidad (Fase 8).** Componente único, montado una sola vez, con tres funciones:
+  - *Alto contraste:* invierte la paleta a fondo negro puro y texto blanco/colores muy saturados, eliminando adornos visuales no esenciales. Reutiliza las mismas variables de color semántico ya definidas (sección 1), sobreescritas bajo un modificador global (por ejemplo `[data-contrast="high"]`), sin duplicar la lógica de color por componente.
+  - *Tamaño de letra ajustable:* botones `+`/`-` que escalan la tipografía en pasos fijos (ej. 100% → 110% → 120%), con un tope máximo definido para no romper el layout, y el porcentaje actual visible junto a los controles. El layout de las tres zonas de `layout.md` debe reacomodarse automáticamente al cambio (unidades relativas, no píxeles fijos).
+  - *Navegación y avisos accesibles:* orden de tabulación natural (de arriba hacia abajo, siguiendo el orden real del DOM) en las cinco pestañas y sus contenidos; los elementos de contenido dinámico (toasts, countdown, mensajes de sesión) usan `aria-live="polite"` para que lectores de pantalla anuncien su aparición sin intervención del usuario.
 
 ## 4. Principio de Reutilización
 

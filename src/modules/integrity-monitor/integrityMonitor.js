@@ -2,15 +2,10 @@ import './integrityMonitor.css'
 import { checkEndpointHealth } from '../../state/store.js'
 import { renderShell, updateEndpointStatus } from './integrityMonitorView.js'
 
-// Monitor de Integridad (08_integrity_monitor.md): 4 chequeos
-// independientes con timeout propio del módulo sobre el envoltorio de
-// AbortController, consumido vía store.checkEndpointHealth() — nunca
-// src/data/ directamente (02_architecture.md).
+// Monitor de Integridad (08_integrity_monitor.md): 4 chequeos independientes vía store.checkEndpointHealth().
 const TIMEOUT_MS = 5000
 
-// Rutas tal como las documenta 04_api_contract.md — este módulo no
-// importa src/data/endpoints.js (Capa de Datos), así que las declara
-// como sus propias constantes locales.
+// Rutas de 04_api_contract.md declaradas localmente: este módulo no importa src/data/endpoints.js.
 const MONITORED_ENDPOINTS = [
   { key: 'teams', label: 'Equipos', path: '/get/teams' },
   { key: 'groups', label: 'Grupos', path: '/get/groups' },
@@ -35,8 +30,7 @@ async function runSingleCheck(container, endpoint) {
   updateEndpointStatus(container, endpoint.key, result)
 }
 
-// Dispara los 4 chequeos sin esperarse entre sí: un timeout en uno no
-// retrasa la actualización visual de los demás (08 §5-6).
+// Dispara los 4 chequeos sin esperarse entre sí (08 §5-6).
 function runAllChecks(container) {
   for (const endpoint of MONITORED_ENDPOINTS) {
     updateEndpointStatus(container, endpoint.key, { state: 'checking' })
@@ -44,12 +38,14 @@ function runAllChecks(container) {
   }
 }
 
+function wireRetryButton(container) {
+  const retryButton = container.querySelector('.integrity-monitor-retry')
+  retryButton.addEventListener('click', () => runAllChecks(container))
+}
+
 export function startIntegrityMonitor() {
   const panelElement = document.querySelector('section[data-module-id="integrity-monitor"]')
   renderShell(panelElement, MONITORED_ENDPOINTS)
-
-  const retryButton = panelElement.querySelector('.integrity-monitor-retry')
-  retryButton.addEventListener('click', () => runAllChecks(panelElement))
-
+  wireRetryButton(panelElement)
   runAllChecks(panelElement)
 }

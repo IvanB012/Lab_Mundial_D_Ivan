@@ -28,7 +28,13 @@ Necesario para conocer:
 
 ## 1. Objetivo
 
-Practicar manipulación masiva del DOM ya renderizado, sin depender de nuevas peticiones a la API una vez cargados los datos iniciales.
+Practicar manipulación masiva del DOM ya renderizado, sin depender de nuevas peticiones a la API una vez cargados los datos iniciales, incluyendo filtrado de texto en tiempo real sobre esos mismos datos.
+
+## 1.1. Barra de Búsqueda (ampliación de alcance — Fase 8)
+
+Un input de texto que filtra la lista de equipos y estadios ya renderizada conforme el usuario escribe, letra por letra, sin generar ninguna petición nueva a la API — opera exclusivamente sobre la caché en memoria ya cargada, igual que el switch de idioma.
+
+**Comportamiento sensible al idioma:** la comparación de texto se hace contra el campo del idioma actualmente activo (`name_en` o `name_fa`, según el estado del switch en ese momento) — nunca contra ambos a la vez ni contra un idioma fijo. Si el usuario cambia de idioma mientras hay texto escrito en el buscador, el filtro se reevalúa contra el nuevo idioma activo.
 
 ## 2. Endpoints Consumidos
 

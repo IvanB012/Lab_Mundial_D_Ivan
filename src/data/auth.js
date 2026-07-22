@@ -3,8 +3,7 @@ import { coreRequest } from './requestCore.js'
 
 const TOKEN_STORAGE_KEY = 'wc26_auth_token'
 
-// Componente de Autenticación (05_shared_infrastructure.md §5).
-// Obtiene y almacena el token JWT; el manejo del 401 vive en httpClient.js.
+// Componente de Autenticación (05_shared_infrastructure.md §5): obtiene y almacena el token JWT.
 export function getToken() {
   return localStorage.getItem(TOKEN_STORAGE_KEY)
 }
@@ -17,9 +16,7 @@ export function clearToken() {
   localStorage.removeItem(TOKEN_STORAGE_KEY)
 }
 
-// Decodifica el payload del JWT para leer `exp`, sin verificar la firma
-// (no hay forma de validarla desde el frontend sin backend propio): solo
-// permite detectar expiración de forma proactiva, nunca autenticidad.
+// Decodifica el payload del JWT para leer `exp`, sin verificar firma (03_business_rules.md §1).
 function decodePayload(token) {
   const payloadB64 = token.split('.')[1]
   if (!payloadB64) throw new Error('Token sin payload: no tiene forma de JWT.')

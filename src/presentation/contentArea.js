@@ -1,23 +1,22 @@
 import { MODULE_TABS } from './moduleTabs.js'
 
-// Zona de Contenido (dashboard_design.md §2, layout.md §4). Los cinco
-// paneles se crean una sola vez y se alternan con `hidden`: cambiar de
-// pestaña nunca destruye ni recrea el DOM de los módulos en segundo plano
-// (dashboard_design.md §4), dejando el polling futuro de cada módulo intacto.
-export function mountContentArea(container) {
+// Zona de Contenido (dashboard_design.md §2, layout.md §4): paneles fijos alternados con `hidden`.
+function buildPanelMarkup(tab, activeTabId) {
+  return `
+    <section
+      class="module-panel"
+      data-module-id="${tab.id}"
+      ${tab.id === activeTabId ? '' : 'hidden'}
+    >
+      <p class="module-placeholder">${tab.loadingMessage}</p>
+    </section>
+  `
+}
+
+export function mountContentArea(container, activeTabId) {
   container.innerHTML = `
     <div class="content-area">
-      ${MODULE_TABS.map(
-        (tab, index) => `
-        <section
-          class="module-panel"
-          data-module-id="${tab.id}"
-          ${index === 0 ? '' : 'hidden'}
-        >
-          <p class="module-placeholder">${tab.label} — pendiente (Fase 3)</p>
-        </section>
-      `,
-      ).join('')}
+      ${MODULE_TABS.map((tab) => buildPanelMarkup(tab, activeTabId)).join('')}
     </div>
   `
 

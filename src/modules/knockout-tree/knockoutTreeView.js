@@ -1,7 +1,4 @@
-// Renderizado del bracket. El dibujo inicial usa games (embebido o
-// "Por definir"); applyTeamCrossReference() parchea solo las casillas
-// que quedaron pendientes de cruce con /get/teams, sin tocar el resto
-// (10_knockout_tree.md §5).
+// Renderizado del bracket (10_knockout_tree.md §5); applyTeamCrossReference() parchea aparte.
 function buildTeamSlot(side, slot) {
   const div = document.createElement('div')
   div.className = 'knockout-team'
@@ -29,37 +26,42 @@ function buildMatch(game) {
   return match
 }
 
+function buildEmptyMessage() {
+  const empty = document.createElement('p')
+  empty.className = 'knockout-tree-empty'
+  empty.textContent = 'No hay partidos de fase eliminatoria disponibles.'
+  return empty
+}
+
+function buildRound(round) {
+  const roundDiv = document.createElement('div')
+  roundDiv.className = 'knockout-round'
+  roundDiv.dataset.roundType = round.type
+
+  const heading = document.createElement('h3')
+  heading.textContent = round.label
+  roundDiv.appendChild(heading)
+
+  for (const game of round.games) {
+    roundDiv.appendChild(buildMatch(game))
+  }
+
+  return roundDiv
+}
+
 export function renderBracket(container, rounds) {
   if (!container) return
 
   container.innerHTML = ''
 
   if (rounds.length === 0) {
-    const empty = document.createElement('p')
-    empty.className = 'knockout-tree-empty'
-    empty.textContent = 'No hay partidos de fase eliminatoria disponibles.'
-    container.appendChild(empty)
+    container.appendChild(buildEmptyMessage())
     return
   }
 
   const tree = document.createElement('div')
   tree.className = 'knockout-tree'
-
-  for (const round of rounds) {
-    const roundDiv = document.createElement('div')
-    roundDiv.className = 'knockout-round'
-    roundDiv.dataset.roundType = round.type
-
-    const heading = document.createElement('h3')
-    heading.textContent = round.label
-    roundDiv.appendChild(heading)
-
-    for (const game of round.games) {
-      roundDiv.appendChild(buildMatch(game))
-    }
-
-    tree.appendChild(roundDiv)
-  }
+  for (const round of rounds) tree.appendChild(buildRound(round))
 
   container.appendChild(tree)
 }

@@ -1,14 +1,12 @@
 const CONTAINER_ID = 'wc26-toast-container'
 
-// Sistema de Notificaciones (05_shared_infrastructure.md §6): mensajes no
-// bloqueantes en pantalla. Nunca usa alert() (prohibición absoluta,
-// 03_business_rules.md §6). Vive en Presentación: es la única capa
-// autorizada a manipular el DOM (02_architecture.md §1, §4).
+// Sistema de Notificaciones (05_shared_infrastructure.md §6): mensajes no bloqueantes, nunca alert().
 function getContainer() {
   let container = document.getElementById(CONTAINER_ID)
   if (!container) {
     container = document.createElement('div')
     container.id = CONTAINER_ID
+    container.setAttribute('aria-live', 'polite')
     document.body.appendChild(container)
   }
   return container

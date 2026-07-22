@@ -7,7 +7,7 @@
 npm run dev
 
 # Terminal 2
-node dev-proxy.cjs
+node tools/dev-proxy.cjs
 ```
 
 (`.cjs` y no `.js`: el `package.json` del proyecto tiene `"type": "module"`,
@@ -32,6 +32,9 @@ http://localhost:8000/__chaos/401?scope=auth&times=1
 # Rate limit en datos, con backoff/countdown visible (3 intentos)
 http://localhost:8000/__chaos/429?scope=data&times=3
 
+# Error de servidor en datos (backoff sin countdown, 3 intentos)
+http://localhost:8000/__chaos/500?scope=data&times=3
+
 # Error de servidor en login
 http://localhost:8000/__chaos/500?scope=auth&times=1
 
@@ -44,6 +47,30 @@ http://localhost:8000/__chaos/500?times=0
 # Apagado de emergencia — cortar esto ante cualquier duda
 http://localhost:8000/__chaos/off
 ```
+
+## Simular el timeout de 5s del Monitor de Integridad
+
+`/__chaos` no sirve para esto: solo inyecta códigos de error instantáneos
+(401/429/500), nunca demora una respuesta. El timeout de `AbortController`
+(`08_integrity_monitor.md`, tope de 5s) hay que probarlo con la
+funcionalidad nativa de DevTools, no con el proxy:
+
+```
+1. DevTools > pestaña Network > menú "No throttling" (arriba a la derecha)
+2. "Add custom profile..." (o "Edit..." según la versión de Chrome)
+3. Crear un perfil con latencia > 5000 ms (ej. 6000 ms), sin límite de
+   descarga/subida necesario
+4. Seleccionar ese perfil como throttling activo
+5. Recargar o abrir la pestaña "Monitor de Integridad" / tocar "Reintentar"
+```
+
+Con la latencia forzada por encima del límite del módulo, los 4 semáforos
+deben pasar a rojo con "Tiempo agotado" a los 5s exactos — no antes,
+y sin esperar a que la respuesta lenta efectivamente llegue. Confirmar
+en Network que la petición sigue "pendiente" más allá de los 5s (la
+demora la sigue aplicando el navegador) mientras la UI ya marcó timeout.
+No olvidar volver a "No throttling" al terminar, para no arrastrar la
+demora a las otras pruebas de esta guía.
 
 ## Notas
 

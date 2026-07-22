@@ -52,7 +52,7 @@ Mecanismo interno de publicación/suscripción usado por el Gestor de Estado Glo
 
 **Vocabulario de topics para estado transversal (sesión, countdown, offline):** además de los cuatro dominios de datos (`games`, `teams`, `stadiums`, `groups`), el Sistema de Eventos usa tres topics fijos para que la Barra de Estado Global (`dashboard_design.md`) refleje el estado de resiliencia definido en `03_business_rules.md`:
 
-- `'session'` — payload: `{ active: boolean }`. Se publica cuando cambia el estado de sesión (por ejemplo, tras un 401).
+- `'session'` — payload: `{ active: boolean, reason: 'expired' | 'manual' | 'initial' | 'login' }`. Se publica cuando cambia el estado de sesión. `reason: 'expired'` es exclusivo del 401 real o de una expiración detectada proactivamente por el cliente (mismo tratamiento, mismo mecanismo — ver `03_business_rules.md` §1); `reason: 'manual'` es exclusivo del logout disparado por el usuario; `reason: 'initial'` se usa en el arranque con token ya existente (sin login explícito en esta carga de página); `reason: 'login'` se usa exclusivamente cuando el usuario acaba de autenticarse explícitamente (envío del formulario de login). Cualquier consumidor de este evento (por ejemplo, el mensaje del overlay de login) debe usar `reason` para decidir su texto — nunca asumir el motivo a partir de otro estado, y nunca reutilizar un valor existente para un caso semánticamente distinto solo porque hoy nada lo consuma.
 - `'countdown'` — payload: `{ secondsRemaining: number }`. Se publica en cada segundo de espera durante un backoff por 429, según `03_business_rules.md` §4.
 - `'offline'` — payload: `{ stale: boolean }`. Se publica cuando un módulo muestra datos cacheados en vez de datos frescos.
 

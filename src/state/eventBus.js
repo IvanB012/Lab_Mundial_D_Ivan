@@ -1,7 +1,6 @@
 const listeners = new Map()
 
-// Sistema de Eventos (05_shared_infrastructure.md §4): pub/sub interno
-// sin lógica de negocio, usado por el Gestor de Estado Global.
+// Sistema de Eventos (05_shared_infrastructure.md §4): pub/sub interno sin lógica de negocio.
 export function subscribe(topic, callback) {
   if (!listeners.has(topic)) listeners.set(topic, new Set())
   listeners.get(topic).add(callback)
